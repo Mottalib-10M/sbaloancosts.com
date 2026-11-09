@@ -11,7 +11,9 @@ export function plier(html: string): string {
     .map((part) => {
       const m = part.match(/^<h2([^>]*)>([\s\S]*?)<\/h2>/);
       if (!m) return part;
-      return `<details class="pli"><summary><h2${m[1]}>${m[2]}</h2></summary><div class="pli-corps">${part.slice(m[0].length)}</div></details>`;
+      // `data-ouvert` on the heading: the section answers the page's own question and stays open (brief of 2026-11-09:
+      // the essential is never folded; final naive test: the 7(a) requirements were folded three screens down).
+      return `<details class="pli"${/\bdata-ouvert\b/.test(m[1]) ? ' open' : ''}><summary><h2${m[1]}>${m[2]}</h2></summary><div class="pli-corps">${part.slice(m[0].length)}</div></details>`;
     })
     .join('');
 }

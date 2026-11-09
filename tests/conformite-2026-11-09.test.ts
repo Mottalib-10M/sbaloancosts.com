@@ -33,7 +33,7 @@ describe('périodes écrites en mois', () => {
 describe('requête « sba loan requirements »', () => {
   it('la page 7(a) porte la section, le titre et une FAQ', () => {
     const p = PAGES.find((x) => x.id === 'sba-7a-loan')!;
-    expect(p.body(h)).toContain('<h2 id="requirements">SBA loan requirements');
+    expect(p.body(h)).toContain('<h2 id="requirements" data-ouvert>SBA loan requirements');
     expect(p.title).toMatch(/Requirements/);
     expect(p.faqs(h).some((f) => /requirements for an SBA loan/.test(f.q))).toBe(true);
   });

@@ -12,6 +12,6 @@ const en = {
   footerPopular: '',
   notFound: 'This address leads nowhere. The SBA loan cost calculator, the rate table and the 51 state pages are one click away.',
   readMore: 'Show the whole paragraph here ▾', disclaimer: 'Estimates from SBA notices and the SBA loan file: a budget, not a loan offer and not financial advice. The lender’s note and SBA’s terms and conditions are what count.',
-  attribution: 'Loan counts, amounts and rates: U.S. Small Business Administration, 7(a) & 504 FOIA data (U.S. Government Works), file as of September 30, 2026; calculations by Radif Partners. The SBA has not reviewed or endorsed this site.',
+  attribution: 'Loan counts, amounts and rates: U.S. Small Business Administration, 7(a) & 504 FOIA data (records released under the Freedom of Information Act; U.S. Government Works), file as of September 30, 2026; calculations by Radif Partners. The SBA has not reviewed or endorsed this site.',
 };
 export function t(_lang: Locale) { return en; }

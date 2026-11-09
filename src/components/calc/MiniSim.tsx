@@ -36,7 +36,7 @@ export default function MiniSim({ kind, lang = 'en', href, defaults = {}, primar
         </form>
         <div aria-live="polite" {...(primary ? { 'data-resultat': '' } : {})} className="self-start border-l-4 border-accent-500 bg-accent-50 p-4">
           {/* Trame (testeurs naïfs du 2026-11-08) : mention tant qu'aucun champ n'est modifié. */}
-          <MentionExemple lang={lang} touched={touched} />
+          <MentionExemple lang={lang} touched={touched} texte={out.exemple} />
           <p className="text-sm font-medium text-navy-700">{out.head[0]}</p>
           <p className="tabular-nums mt-1 text-4xl font-bold text-navy-900">{out.head[1]}</p>
           <table className="ledger mt-3 w-full text-sm"><tbody>

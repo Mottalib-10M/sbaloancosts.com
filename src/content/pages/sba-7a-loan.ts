@@ -11,7 +11,7 @@ export default definePage({
   id: 'sba-7a-loan',
   group: 'loans',
   order: 10,
-  tool: { kind: 'mini:cost' },
+  tool: { kind: 'mini:cost', props: { title: 'Your 7(a) loan: monthly payment, SBA fee and SBA cap' } },
   related: ['sba-loan-rates', 'sba-guaranty-fee', 'sba-express-loan', 'sba-504-loan'],
   sources: ['page7a', 'cfr', 'sop', 'fees7a', 'fixedRates', 'foia'],
   slug: 'sba-7a-loan',
@@ -20,7 +20,7 @@ export default definePage({
   title: 'SBA 7(a) Loan 2026: Requirements, Rate Caps, Fees, Payment',
   description: 'SBA 7(a) loan requirements and costs in 2026: who qualifies, up to $5 million over 10 or 25 years, rate capped at prime plus 3 to 6.5, guaranty fee and payment.',
   h1: 'SBA 7(a) loan: requirements, costs and how it is built',
-  intro: `The 7(a) is SBA’s main loan: up to ${$(P.sevenA.maxLoan)}, made by a bank and partly guaranteed by SBA. Type a quote below to see the fee, the SBA cap (the highest rate allowed) and the payment. Who qualifies is under “SBA loan requirements”.`,
+  intro: `The 7(a) is SBA’s main loan: up to ${$(P.sevenA.maxLoan)}, made by a bank and partly guaranteed by SBA. Who qualifies: the seven SBA loan requirements, open just below the calculator. Type a quote to see the fee, the SBA cap (the highest rate allowed) and the payment.`,
   resume: (h) => `An SBA 7(a) loan is a business loan made by a bank, credit union or licensed lender and guaranteed in part by the U.S. Small Business Administration. The loan can reach ${h.m(P.sevenA.maxLoan)}; SBA guarantees ${P.sevenA.guaranty.smallPct}% of loans up to ${h.m(P.sevenA.guaranty.smallUpTo)} and ${P.sevenA.guaranty.largePct}% above, with at most ${h.m(P.sevenA.maxGuarantyAmount)} guaranteed. Terms run up to ${P.sevenA.maturity.workingCapital} years for working capital and equipment and ${P.sevenA.maturity.realEstate} years for real estate. The lender sets the rate, but SBA’s lending rules cap it: on a variable loan, prime plus ${formatNumber(E.maxSpread(1, 'variable'), 1)} points up to ${h.m(50000)}, falling to prime plus ${formatNumber(E.maxSpread(1e6, 'variable'), 1)} above ${h.m(350000)}. With prime at ${h.r(P.prime.rate)} on ${h.date(P.prime.date)}, that is ${h.r(E.maxRate(1, 'variable'))} to ${h.r(E.maxRate(1e6, 'variable'))}. The borrower also pays a one-time guaranty fee, ${P.fees7a.tiers[0].rate}% to ${P.fees7a.tiers[2].rateOver1M}% of the guaranteed part on loans approved from ${h.date(P.fy.from)}. SBA’s loan file counts ${h.num(N.n)} 7(a) loans approved ${h.fy}, with a median of ${h.m(N.medAmt)}.`,
   faqs: (h) => [
     { q: 'How much can a business borrow with a 7(a) loan?', a: `Up to ${h.m(P.sevenA.maxLoan)} in total, counting the business and its affiliates. SBA’s share is capped at ${h.m(P.sevenA.maxGuarantyAmount)}, so on the largest loans the lender keeps more of the risk. Few loans come close to that limit: half of the loans approved ${h.fy} were for ${h.m(N.medAmt)} or less, and ${h.pc(N.smallShare)} were for ${h.m(P.sevenA.guaranty.smallUpTo)} or less.` },
@@ -37,7 +37,7 @@ export default definePage({
     });
     const ex = E.cost7a({ amount: 350000, years: 10, rate: E.maxRate(350000, 'variable') });
     const exLow = E.cost7a({ amount: 350000, years: 10, rate: typicalRate(350000) });
-    return `<h2 id="requirements">SBA loan requirements: who can get a 7(a) loan</h2>
+    return `<h2 id="requirements" data-ouvert>SBA loan requirements: who can get a 7(a) loan</h2>
 <p>SBA’s 7(a) page and its list of excluded businesses, both read on November 9, 2026, say what a business must be. Each point is checked by the lender, not by SBA, and meeting all seven is not a promise of a loan:</p>
 <ol>
 <li>an operating business;</li>
@@ -49,10 +49,10 @@ export default definePage({
 <li>creditworthy, with a reasonable ability to repay from the business’s cash flow.</li>
 </ol>
 <p><strong>For a new business or a start-up</strong>, the lender also wants a business plan and cash of your own: SBA’s lending rules ask for at least ${P.sevenA.startupEquity}% of the total project cost. <strong>For an existing business</strong>, it reads the tax returns and the cash flow of the last years. <strong>To buy a business</strong>, it values the business, asks how much of the price you pay in cash and whether the seller lends part of it. In every case each owner of 20% or more personally guarantees the loan. ${h.pc(N.ages.startup / N.n)} of the loans approved ${h.fy} went to businesses not yet open, and ${h.pc(N.ages.buyout / N.n)} paid for a business purchase.</p>
-<h2>How the loan is put together</h2>
+<h2>What part the bank lends and what part SBA guarantees</h2>
 <p>SBA does not hand out the money. A lender approves the loan on its own credit judgment, and SBA guarantees part of it: if the borrower defaults, SBA repays the lender that share after the collateral is sold. That guarantee is what lets a bank lend to a business it would otherwise turn down, for a longer term or with less collateral. In exchange, the lender must follow SBA’s lending rules and charge no more than the SBA cap.</p>
 <p>Most loans are decided by Preferred Lenders, banks that SBA allows to approve loans themselves without sending the file to SBA: ${h.pc(N.programs.plp / N.n)} of ${h.fy} approvals. Another ${h.pc(N.programs.express / N.n)} went through ${h.a('sba-express-loan', 'SBA Express')}, which has a smaller guaranty and a ${h.m(P.sevenA.expressMax)} cap.</p>
-<h2>The SBA cap, step by step</h2>
+<h2>The highest rate SBA allows, by loan size</h2>
 <p>The cap depends on the amount, and it gets tighter as the loan gets larger. Most variable loans are pegged to the prime rate in effect on the first business day of the month, ${h.r(P.prime.rate)} for November 2026. SBA’s rules also allow a few other base rates, which the loan contract would name.</p>
 ${h.table(['Loan amount', 'Variable cap', 'Variable cap today', 'Fixed cap', 'Typical rate at approval', 'Typical rate today'], rows, `SBA caps from SBA’s lending rules (see Sources), prime ${h.r(P.prime.rate)} of ${h.date(P.prime.date)}. Typical = median of variable-rate loans approved ${h.fy} in SBA’s public loan file, set when prime was ${h.r(6.75)} to ${h.r(7)}; “today” puts the same margin over prime on today’s prime, as on the home page.`, ['l', 'l', 'r', 'l', 'r', 'r'])}
 <p>The two typical rates are what borrowers actually got, then and on today’s prime. Across all sizes, ${h.pc(N.atCapV!)} of variable loans were priced at the cap, but the share is ${h.pc(N.atCapVBand[0]!)} for loans of ${h.m(50000)} or less. Read more on the ${h.a('sba-loan-rates', 'rates page')}.</p>

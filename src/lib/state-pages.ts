@@ -143,7 +143,7 @@ function extreme(key: string, hi: boolean, s: St, code: E.StateCode, f: (x: St) 
       : { h2: 'Seasoned borrowers', p: `Firms under two years old took only ${pc(age(s, 'new'))} of ${name}’s approvals, ${rk}; the market here is built on businesses with several years of tax returns.` };
     case 'revolver': return hi
       ? { h2: 'A market for credit lines', p: `Revolving lines were ${pc(s.revolverShare)} of ${name}’s approvals, ${rk}. A business that needs cash for seasonal swings or receivables can ask for a line rather than a term loan; the cap on the rate is the same.` }
-      : { h2: 'Credit lines are scarce', p: `Only ${pc(s.revolverShare)} of ${name}’s SBA approvals were revolving lines, ${rk}. Term loans with a fixed repayment schedule make up the rest.` };
+      : { h2: 'Few businesses here get a revolving credit line', p: `Only ${pc(s.revolverShare)} of ${name}’s SBA approvals were revolving lines, ${rk}. Term loans with a fixed repayment schedule make up the rest.` };
     default: return null;
   }
 }
@@ -342,7 +342,11 @@ function page(code: E.StateCode, i: number): PageDef {
       // Home state written out (naive test of 2026-11-08: “Based in Texas?” answered “FL”).
       const home = (hq: string) => (hq === code ? `${name} (in-state)` : hq in E.F.states ? E.stateName(hq as E.StateCode) : hq);
       const lenderRows = s.lenders.map((l) => [shortBank(l.name), num(l.n), m(l.medAmt), l.medV !== null ? r(l.medV) : 'n/a', home(l.hq)]);
-      const tbl = h.table(['Lender', `Loans, ${FY}`, 'Median loan', 'Typical variable rate', 'Lender’s home state'], lenderRows, `Five busiest SBA 7(a) lenders for ${name} projects, loans approved ${FY}. SBA’s public loan file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
+      // Final naive test of 2026-11-09: the list read as a recommendation, and rates compared across loan sizes.
+      const bySize = [...s.lenders].sort((x, y) => y.medAmt - x.medAmt);
+      const big = bySize[0], small = bySize[bySize.length - 1];
+      const sizes = big && small && big.medAmt > small.medAmt * 1.3 ? `: ${shortBank(big.name)}’s median loan was ${m(big.medAmt)}, ${shortBank(small.name)}’s ${m(small.medAmt)}, so their rates do not compare` : ', so compare a lender’s rate only with loans of a similar size';
+      const tbl = h.table(['Lender', `Loans, ${FY}`, 'Median loan', 'Typical variable rate', 'Lender’s home state'], lenderRows, `The five lenders that made the most SBA 7(a) loans for ${name} projects, approved ${FY}: not a recommendation. Rates fall as loans get bigger${sizes}. Ask two of them, or your own bank, for a quote. SBA’s public loan file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
       const bandRows = E.BAND_LABELS.map((lab, k) => [lab, num(s.bands[k]), s.medVBand[k] !== null ? r(s.medVBand[k]!) : 'too few', r(E.maxRate([50000, 250000, 350000, 1000000][k], 'variable'))]);
       const tbl2 = h.table(['Loan size', 'Loans', `Typical variable rate, ${FY}`, 'SBA cap today'], bandRows, `Typical = median, set at approval (prime ${r(6.75)} to ${r(7)}); SBA cap on prime ${r(P.prime.rate)} of ${h.date(P.prime.date)}. Cells under ${E.F.minCell} loans are not shown.`, ['l', 'r', 'r', 'r']);
       const where = s.counties.length ? `<p>Counties with the most approvals: ${list(s.counties.map((c) => `${c.name} (${num(c.n)})`))}. Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>` : `<p>Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>`;

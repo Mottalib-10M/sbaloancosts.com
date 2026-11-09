@@ -106,4 +106,6 @@ details.pli > summary:focus-visible { outline: 2px solid #111827; outline-offset
 details.pli > summary h2, .prose details.pli > summary h2 { margin: 0 !important; padding: 0 !important; border: 0 !important; font-size: 1.2rem; line-height: 1.35; font-weight: 700; color: var(--color-navy-900); }
 details.pli > .pli-corps { padding-bottom: 1rem; }
 details.pli > .pli-corps > :first-child { margin-top: .25rem; }
+/* Pied de page (brief du 2026-11-09) : un seul titre à ouvrir sur téléphone, ouvert et sans titre sur ordinateur. */
+@media (min-width: 768px) { details.pied > summary { display: none; } details.pied, details.pied:last-of-type { border: 0; } }
 .pli-aide { margin: 0 0 .5rem; font-size: .875rem; color: var(--color-navy-600); }

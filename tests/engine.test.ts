@@ -132,10 +132,10 @@ describe('FOIA file', () => {
 
 // Naive test of 2026-11-08: the prefilled “median” rate was called dearer than 8 loans in 10, the same 350,000
 // loan showed two medians and two payments, and the comparison put the fee in two different places.
-import { getSpec, typicalRate, placeLine } from '../src/lib/mini-specs';
+import { getSpec, typicalRate, placeLine, TYPICAL_VERDICT } from '../src/lib/mini-specs';
 describe('one median, one verdict (naive test of 2026-11-08)', () => {
-  it('the typical rate of every size reads “about the median”', () => {
-    for (const a of [40_000, 150_000, 250_000, 300_000, 350_000, 1_200_000]) expect(placeLine(typicalRate(a), a, 'variable')).toBe('about the median for this size');
+  it('the typical rate of every size reads the typical verdict', () => {
+    for (const a of [40_000, 150_000, 250_000, 300_000, 350_000, 1_200_000]) expect(placeLine(typicalRate(a), a, 'variable')).toBe(TYPICAL_VERDICT);
   });
   it('a margin is placed among margins: shares bounded, monotone, ties split', () => {
     const lo = E.marginPlace(2, 150_000, 'variable')!, hi = E.marginPlace(5, 150_000, 'variable')!, mid = E.marginPlace(3, 150_000, 'variable')!;
@@ -161,9 +161,9 @@ describe('one median, one verdict (naive test of 2026-11-08)', () => {
     // Naive test of 2026-11-08: 10 years against 5 put a total of $101,129 in large type. The head is now the true
     // yearly cost, fair whatever the terms; the total names the longer loan.
     const out = getSpec('compare').run({ amount: 300_000, sbaRate: 9.75, sbaYears: 10, convRate: 9.75, convYears: 5, convFee: 0 });
-    expect(out.head[0]).toBe('Lower true yearly cost, fees counted: the conventional loan');
+    expect(out.head[0]).toBe('Lower true yearly cost (APR), fees counted: the bank loan');
     expect(out.head[1]).toBe('9.75%');
-    expect(out.rows[4][0]).toBe('Lower total: the conventional loan, mostly because it runs 5 years, not 10');
+    expect(out.rows[out.rows.length - 1][0]).toBe('Lower total: the bank loan, mostly because it runs 5 years, not 10');
   });
   it('the comparison starts on the same term on both sides', () => {
     const spec = getSpec('compare');

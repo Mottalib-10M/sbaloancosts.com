@@ -41,7 +41,7 @@ for (let i = 0; i < parts.length; i += 3) { chunks.push({ html: parts[i] }); if 
       <p class="kicker">{page.kicker ?? groupLabel(page.group)}</p>
       <h1 class="mt-1 text-[1.75rem] font-bold text-navy-900 max-sm:leading-tight sm:text-3xl md:text-4xl">{page.h1}</h1>
       <p class="mt-2 text-base text-navy-700 sm:text-lg">{page.intro}</p>
-      <p data-chrome class="mt-1 text-xs text-navy-600">Independent site, not a lender and not affiliated with the U.S. Small Business Administration. Loans are applied for only with an SBA lender.</p>
+      <p data-chrome class="mt-1 text-xs text-navy-600">Independent site, not a lender, not the SBA (U.S. Small Business Administration). Nothing you type leaves your phone: no sign-up, no lender will call you.</p>
     </header>
     {page.tool && <div data-outil class="mb-4"><Tool tool={page.tool} primary={true} /></div>}
     <Clamp text={page.resume(h)} id={`clamp-${page.id}`} lang={lang} label="Show the whole paragraph here" class="mb-3" />

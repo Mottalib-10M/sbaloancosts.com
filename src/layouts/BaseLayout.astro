@@ -163,25 +163,30 @@ const crumbAside = Astro.slots.has('crumb-aside') ? (await Astro.slots.render('c
       <slot />
     </main>
     <footer class="mt-16 border-t border-navy-200 bg-navy-50">
-      <div class="mx-auto max-w-6xl px-4 py-12">
-        {/* Sur téléphone, les colonnes de liens prenaient deux écrans (testeurs du 2026-11-08) : un seul titre à ouvrir. */}
-        <details class="pli md:hidden"><summary><h2 class="text-base">All pages of this site</h2></summary><div class="pli-corps grid grid-cols-2 gap-6">
-          {footerCols.map((col) => (<div><p class="mb-2 text-sm font-semibold text-navy-900">{col.label}</p><ul class="space-y-2 text-sm text-navy-600">{col.links.map((l) => <li><a href={l.href} class="hover:text-navy-900">{l.label}</a></li>)}</ul></div>))}
-        </div></details>
-        <div class="hidden grid-cols-2 gap-8 md:grid md:grid-cols-4">
-          {footerCols.map((col) => (<div><h2 class="mb-3 text-sm font-semibold text-navy-900">{col.label}</h2><ul class="space-y-2 text-sm text-navy-600">{col.links.map((l) => <li><a href={l.href} class="hover:text-navy-900">{l.label}</a></li>)}</ul></div>))}
-        </div>
-        {popular.length > 0 && (<div class="mt-8 border-t border-navy-200 pt-6"><h2 class="mb-2 text-sm font-semibold text-navy-900">{ui.footerPopular}</h2><p class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-navy-600">{popular.map((p) => <a href={p.href} class="hover:text-navy-900">{p.label}</a>)}</p></div>)}
-        <div class="mt-8 border-t border-navy-200 pt-8">
-          <div class="flex flex-col items-center gap-2 text-center text-sm text-navy-500">
-            <p><span class="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-0.5 text-xs font-medium text-green-700"><span class="inline-block h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>{ui.footerValidated} · {YEAR}</span></p>
-            <p>{ui.footerBrowser}</p>
-            <p>{ui.asOf}, {ui.lastUpdated} <time datetime={LAST_UPDATED}>{displayDate(LAST_UPDATED, LANG_TAGS[lang])}</time></p>
-            <p>&copy; {new Date().getFullYear()} {SITE_NAMES[lang]}. {ui.footerDisclaimer}</p>
-            <p>{ui.attribution}</p>
-            {(GA4_ID || CLARITY_ID) && CONSENT_MODE !== 'none' && <p><button type="button" data-consent-manage class="underline hover:text-navy-900">{consentStrings(lang).manage}</button></p>}
+      <div class="mx-auto max-w-6xl px-4 py-6 md:py-12">
+        {/* Pied de page (brief du 2026-11-09, trois testeurs : deux à trois écrans identiques à chaque page) : sur
+             téléphone, une ligne courte et UN seul titre à ouvrir ; sur ordinateur, le bloc est ouvert d'emblée. */}
+        <p class="text-center text-sm text-navy-600 md:hidden">{SITE_NAMES[lang]} · independent and free, not a lender · nothing you type is sent</p>
+        <details data-pied class="pli pied mt-2 md:mt-0">
+          <summary><h2 class="text-base">All pages, data sources and legal notices</h2></summary>
+          <div class="pli-corps">
+            <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
+              {footerCols.map((col) => (<div><h2 class="mb-2 text-sm font-semibold text-navy-900 md:mb-3">{col.label}</h2><ul class="space-y-2 text-sm text-navy-600">{col.links.map((l) => <li><a href={l.href} class="hover:text-navy-900">{l.label}</a></li>)}</ul></div>))}
+            </div>
+            {popular.length > 0 && (<div class="mt-8 border-t border-navy-200 pt-6"><h2 class="mb-2 text-sm font-semibold text-navy-900">{ui.footerPopular}</h2><p class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-navy-600">{popular.map((p) => <a href={p.href} class="hover:text-navy-900">{p.label}</a>)}</p></div>)}
+            <div class="mt-8 border-t border-navy-200 pt-8">
+              <div class="flex flex-col items-center gap-2 text-center text-sm text-navy-500">
+                <p><span class="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-0.5 text-xs font-medium text-green-700"><span class="inline-block h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden="true"></span>{ui.footerValidated} · {YEAR}</span></p>
+                <p>{ui.footerBrowser}</p>
+                <p>{ui.asOf}, {ui.lastUpdated} <time datetime={LAST_UPDATED}>{displayDate(LAST_UPDATED, LANG_TAGS[lang])}</time></p>
+                <p>&copy; {new Date().getFullYear()} {SITE_NAMES[lang]}. {ui.footerDisclaimer}</p>
+                <p>{ui.attribution}</p>
+                {(GA4_ID || CLARITY_ID) && CONSENT_MODE !== 'none' && <p><button type="button" data-consent-manage class="underline hover:text-navy-900">{consentStrings(lang).manage}</button></p>}
+              </div>
+            </div>
           </div>
-        </div>
+        </details>
+        <script is:inline set:html={`(function(){var d=document.querySelector('[data-pied]');if(d&&matchMedia('(min-width: 768px)').matches)d.open=true;})();`} />
       </div>
     </footer>
     <script>
