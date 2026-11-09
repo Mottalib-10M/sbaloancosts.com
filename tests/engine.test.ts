@@ -144,8 +144,8 @@ describe('one median, one verdict (naive test of 2026-11-08)', () => {
     expect(E.marginPlace(-10, 150_000, 'variable')!.below).toBe(0);
     expect(E.marginPlace(10, 150_000, 'variable')!.above).toBe(0);
   });
-  it('the cap reads “at the SBA maximum”', () => {
-    expect(placeLine(E.maxRate(40_000, 'variable'), 40_000, 'variable')).toBe('at the SBA maximum');
+  it('the cap reads “at the SBA cap”', () => {
+    expect(placeLine(E.maxRate(40_000, 'variable'), 40_000, 'variable')).toBe('at the SBA cap');
   });
   it('home and 7(a) page give the same 350,000 loan the same rate and payment', () => {
     const spec = getSpec('cost');
@@ -158,9 +158,29 @@ describe('one median, one verdict (naive test of 2026-11-08)', () => {
     const c = E.compare({ amount: 300_000, sbaYears: 10, sbaRate: 9.75, convYears: 5, convRate: 9.75, convFeePct: 0 });
     const h = E.cost7a({ amount: 300_000, years: 10, rate: 9.75 });
     expect(c.sba.monthly).toBeCloseTo(h.monthly, 6);
+    // Naive test of 2026-11-08: 10 years against 5 put a total of $101,129 in large type. The head is now the true
+    // yearly cost, fair whatever the terms; the total names the longer loan.
     const out = getSpec('compare').run({ amount: 300_000, sbaRate: 9.75, sbaYears: 10, convRate: 9.75, convYears: 5, convFee: 0 });
-    expect(out.head[0]).toMatch(/^Lower total cost( \(example\))?: the conventional loan/);
-    expect(getSpec('compare').run({ amount: 300_000, sbaRate: 9.75, sbaYears: 10, convRate: 9.75, convYears: 5, convFee: 0 }, { amount: true }).head[0]).toBe('Lower total cost: the conventional loan, by');
-    expect(out.rows[0][0]).toMatch(/^Lower monthly payment: the SBA loan/);
+    expect(out.head[0]).toBe('Lower true yearly cost, fees counted: the conventional loan');
+    expect(out.head[1]).toBe('9.75%');
+    expect(out.rows[4][0]).toBe('Lower total: the conventional loan, mostly because it runs 5 years, not 10');
+  });
+  it('the comparison starts on the same term on both sides', () => {
+    const spec = getSpec('compare');
+    expect(spec.inputs.find((i) => i.id === 'sbaYears')!.def).toBe(spec.inputs.find((i) => i.id === 'convYears')!.def);
+  });
+  it('one example amount on every page: the median loan of the SBA file', () => {
+    for (const k of ['cost', 'ratecheck', 'fee', 'express', 'compare']) expect(getSpec(k).inputs.find((i) => i.id === 'amount')!.def, k).toBe(220_000);
+  });
+  it('the rate checker splits similar loans into three shares that add up to 100', () => {
+    const out = getSpec('ratecheck').run({ amount: 220_000, type: 0, rate: typicalRate(220_000) });
+    const shares = out.rows.filter(([l]) => /margin than yours|Same margin/.test(l)).map(([, v]) => Number(v.split(' ')[0]));
+    expect(shares).toHaveLength(3);
+    expect(Math.abs(shares.reduce((a, b) => a + b, 0) - 100)).toBeLessThanOrEqual(1);
+  });
+  it('the state calculator puts the payment in large type, not a count of loans', () => {
+    const out = getSpec('state').run({ st: 0, amount: 220_000, rate: typicalRate(220_000), relief: 0 });
+    expect(out.head[0]).toBe('Monthly payment over 10 years');
+    expect(out.head[1]).toMatch(/^\$/);
   });
 });

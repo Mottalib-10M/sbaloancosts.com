@@ -93,3 +93,17 @@ h1 { font-weight: 700; } h2 { font-weight: 650; } h3 { font-weight: 600; }
   .clamp-more { display: inline-block; cursor: pointer; margin-top: 0.25rem; font-size: 0.875rem; font-weight: 600; color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; }
   .clamp-toggle:focus-visible ~ .clamp-more { outline: 2px solid #111827; outline-offset: 3px; }
 }
+
+/* Sections repliées (lib/plier.ts, mise en conformité du 2026-11-09) : le titre H2 est le bouton ; le texte reste
+   dans le HTML. Un filet fin entre les titres, « + » / « − » à droite, cible tactile de 48 px au moins. */
+details.pli { border-top: 1px solid var(--color-navy-200); }
+details.pli:last-of-type { border-bottom: 1px solid var(--color-navy-200); }
+details.pli > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; padding: .6rem 0; }
+details.pli > summary::-webkit-details-marker { display: none; }
+details.pli > summary::after { content: '+'; flex: none; width: 1.75rem; height: 1.75rem; display: grid; place-items: center; border: 1px solid var(--color-navy-300); border-radius: 999px; font-size: 1.1rem; line-height: 1; color: var(--color-accent-700); }
+details.pli[open] > summary::after { content: '−'; }
+details.pli > summary:focus-visible { outline: 2px solid #111827; outline-offset: 2px; }
+details.pli > summary h2, .prose details.pli > summary h2 { margin: 0 !important; padding: 0 !important; border: 0 !important; font-size: 1.2rem; line-height: 1.35; font-weight: 700; color: var(--color-navy-900); }
+details.pli > .pli-corps { padding-bottom: 1rem; }
+details.pli > .pli-corps > :first-child { margin-top: .25rem; }
+.pli-aide { margin: 0 0 .5rem; font-size: .875rem; color: var(--color-navy-600); }

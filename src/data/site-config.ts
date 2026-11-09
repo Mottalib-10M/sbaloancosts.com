@@ -12,7 +12,7 @@ export const YEAR = 2026;
 export const SITE_FOUNDED = '2026';
 export const LAST_UPDATED = '2026-11-08';
 export const AUTHOR_NAME = 'Radif Partners';
-export const AUTHOR_ROLE: Record<string, string> = {"en": "Independent publisher of SBA loan cost calculators, built from SBA fee notices, SOP 50 10 8.1 and the loan-level 7(a) and 504 FOIA files"};
+export const AUTHOR_ROLE: Record<string, string> = {"en": "Independent publisher of SBA loan cost calculators, based in Clermont-Ferrand, France, working from SBA’s fee notices, its lending rules and its public 7(a) and 504 loan files"};
 export const AUTHOR_DESC: Record<string, string> = {"en": "Radif Partners publishes SBA Loan Costs. We read each fiscal year's SBA fee notices, the lending SOP and the Federal Register rate notices, note the date and address of each figure, and load the agency's quarterly loan-by-loan 7(a) and 504 files to count what borrowers were actually charged, state by state and lender by lender. We are not a lender or a broker, take no referral fees and ask for no contact details. Not affiliated with the U.S. Small Business Administration."};
 /** Sujets sur lesquels l'editeur est competent (schema.org knowsAbout). Ce sont les
  *  themes reellement traites par le site, pas une liste de mots-cles : un sujet

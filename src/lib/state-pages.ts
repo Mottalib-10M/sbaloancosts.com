@@ -9,7 +9,7 @@
 import type { PageDef, FAQ } from './guide-types';
 import type { Helpers } from './helpers';
 import * as E from './engine/sba';
-import { P } from './engine/params';
+import { P, DATA_YEAR } from './engine/params';
 import { stateIndex, shortBank } from './mini-specs';
 import { formatMoney, formatNumber, formatPercent, displayDate } from './format';
 
@@ -22,7 +22,9 @@ const num = (n: number) => formatNumber(n, 0);
 const r = (x: number) => `${formatNumber(x, 2)}%`;
 const pts = (x: number) => `${formatNumber(x, 2)} point${Math.abs(x) === 1 ? '' : 's'}`;
 const words = (s: string) => s.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
-const FY = `FY ${E.F.fy}`;
+/** Visible text: the months (“Oct. 2025–Sept. 2026”); search snippets keep the term people type, “FY 2026”. */
+const FY = DATA_YEAR;
+const FYS = `FY ${E.F.fy}`;
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const age = (s: St, k: keyof St['ages']) => s.ages[k] / s.n;
 const exp = (s: St) => s.programs.express / s.n;
@@ -60,8 +62,8 @@ const SPECIAL = /hotel|motel|golf|funeral|assisted living|nursing|car wash|marin
 /** What the rules say about a trade, from its NAICS code or name; null when nothing specific applies. */
 function tradeNote(name: string, code: string): string | null {
   const n = name.toLowerCase();
-  if (/^3[1-3]/.test(code)) return `As a manufacturer (NAICS 31 to 33), a business in this trade pays no ${P.fees7a.label} guaranty fee on a 7(a) loan of ${m(P.fees7a.waiver.upTo)} or less, and on a 504 project its debenture may reach ${m(P.fees504.maxDebentureManufacturing)}.`;
-  if (FOOD.some((f) => code.startsWith(f))) return `The trade is on the food supply chain list of the ${P.fees7a.label} fee notice, so its 7(a) loans of ${m(P.fees7a.waiver.upTo)} or less pay no guaranty fee, and its 504 loans pay neither the upfront nor the annual SBA fee.`;
+  if (/^3[1-3]/.test(code)) return `As a manufacturer (industry code 31 to 33), a business in this trade pays no guaranty fee, since ${displayDate(P.fy.from, 'en-US')}, on a 7(a) loan of ${m(P.fees7a.waiver.upTo)} or less, and on a 504 project its CDC loan may reach ${m(P.fees504.maxDebentureManufacturing)}.`;
+  if (FOOD.some((f) => code.startsWith(f))) return `The trade is on the food supply chain list of SBA’s fee notice for loans approved from ${displayDate(P.fy.from, 'en-US')}, so its 7(a) loans of ${m(P.fees7a.waiver.upTo)} or less pay no guaranty fee, and its 504 loans pay neither the upfront nor the annual SBA fee.`;
   if (SPECIAL.test(n)) return `SBA’s lending rules list these properties as special-purpose, which raises the owner’s contribution on a 504 project to ${P.fees504.structure.borrowerSpecial}% and allows a 7(a) purchase that is mostly real estate to run up to 25 years.`;
   if (/restaurant/.test(n)) return 'Restaurant loans usually mix kitchen equipment, build-out and working capital, so they take a blended maturity close to 10 years unless real estate is more than half of the proceeds.';
   if (/contractor|remodel|construction|site preparation|carpentry|painting/.test(n)) return 'Contractors borrow for trucks, tools and working capital more than for property, so their loans stay near 10 years and the margin steps for smaller loans matter most to them.';
@@ -97,8 +99,8 @@ function extreme(key: string, hi: boolean, s: St, code: E.StateCode, f: (x: St) 
       const f5 = s.f504;
       if (!f5) return null;
       return hi
-        ? { h2: 'A leading 504 state', p: `Relative to its 7(a) volume, ${name} uses 504 debentures more than almost anywhere: ${num(f5.n)} of them for ${h0(f5.total)}, a ratio to 7(a) loans ${rk}.${f5.cdcs.length ? ` ${f5.cdcs[0].name} arranged ${num(f5.cdcs[0].n)} on its own.` : ''} Building owners here can count on a CDC that knows the local market.` }
-        : { h2: 'Hardly any 504 loans', p: `Only ${num(f5.n)} 504 debentures went to ${name} projects against ${num(s.n)} 7(a) loans, a ratio ${rk}.${f5.cdcs.length ? ` The CDC most present was ${f5.cdcs[0].name}.` : ''} For a building, the 504 route is still open and worth pricing against a 7(a) real estate loan.` };
+        ? { h2: 'A leading 504 state', p: `Relative to its 7(a) volume, ${name} uses 504 loans more than almost anywhere: ${num(f5.n)} of them for ${h0(f5.total)}, a ratio to 7(a) loans ${rk}.${f5.cdcs.length ? ` ${f5.cdcs[0].name} arranged ${num(f5.cdcs[0].n)} on its own.` : ''} Building owners here can count on a CDC that knows the local market.` }
+        : { h2: 'Hardly any 504 loans', p: `Only ${num(f5.n)} 504 loans went to ${name} projects against ${num(s.n)} 7(a) loans, a ratio ${rk}.${f5.cdcs.length ? ` The CDC most present was ${f5.cdcs[0].name}.` : ''} For a building, the 504 route is still open and worth pricing against a 7(a) real estate loan.` };
     }
     case 'express': {
       const ex = L.filter((l) => l.expressShare >= 0.7).map((l) => shortBank(l.name));
@@ -109,11 +111,11 @@ function extreme(key: string, hi: boolean, s: St, code: E.StateCode, f: (x: St) 
     case 'cap': {
       const worst = [...L].filter((l) => l.atCapV !== null).sort((a, b) => b.atCapV! - a.atCapV!)[0];
       return hi
-        ? { h2: 'Among the most loans at the legal maximum', p: `${pc(s.atCapV!)} of ${name}’s variable loans sat exactly at SBA’s cap, ${rk}.${worst && worst.atCapV! > 0.2 ? ` Of the five busiest lenders, ${shortBank(worst.name)} priced ${pc(worst.atCapV!)} of its ${name} variable loans at the cap.` : ''} Ask any lender quoting the cap what a lower margin would require.` }
-        : { h2: 'Almost nobody pays the maximum', p: `Just ${pc(s.atCapV!)} of ${name}’s variable loans were at the SBA ceiling, ${rk}. Lenders here compete below the cap, so the median for your loan size, in the table above, is the better benchmark.` };
+        ? { h2: 'Among the most loans at the SBA cap', p: `${pc(s.atCapV!)} of ${name}’s variable loans sat exactly at SBA’s cap, ${rk}.${worst && worst.atCapV! > 0.2 ? ` Of the five busiest lenders, ${shortBank(worst.name)} priced ${pc(worst.atCapV!)} of its ${name} variable loans at the cap.` : ''} Ask any lender quoting the cap what a lower margin would require.` }
+        : { h2: 'Almost nobody pays the SBA cap', p: `Just ${pc(s.atCapV!)} of ${name}’s variable loans were at the SBA cap, ${rk}. Lenders here compete below the cap, so the median for your loan size, in the table above, is the better benchmark.` };
     }
     case 'startup': return hi
-      ? { h2: 'A start-up state', p: `With ${pc(age(s, 'startup'))} of loans going to businesses not yet open, ${name} ranks ${rk} for start-up lending. Every one of those borrowers had to put in at least ${P.sevenA.startupEquity}% of the project cost, under SOP 50 10 8.1.` }
+      ? { h2: 'A start-up state', p: `With ${pc(age(s, 'startup'))} of loans going to businesses not yet open, ${name} ranks ${rk} for start-up lending. Every one of those borrowers had to put in at least ${P.sevenA.startupEquity}% of the project cost, under SBA’s lending rules.` }
       : { h2: 'Lending to going concerns', p: `${name} ranks ${rk} for start-up lending, with ${pc(age(s, 'startup'))} of loans to businesses not yet open; ${pc(age(s, 'existing'))} went to firms more than two years old.` };
     case 'buyout': return hi
       ? { h2: 'A market for business buyers', p: `Acquisitions took ${pc(age(s, 'buyout'))} of ${name}’s SBA loans, ${rk}. Each followed SBA’s rules for buying a business, with their own requirements on the buyer’s equity, the valuation and any seller note.` }
@@ -168,28 +170,28 @@ function observations(code: E.StateCode): Obs[] {
     const price = g === null ? '' : g < -0.2 ? ` Local lenders also priced lower: their median variable margin was ${pts(s.localMedSpreadV!)} over prime, against ${pts(s.outMedSpreadV!)} for lenders based elsewhere.` : g > 0.2 ? ` They did not price lower, though: a median variable margin of ${pts(s.localMedSpreadV!)} over prime, against ${pts(s.outMedSpreadV!)} for the out-of-state lenders.` : ` The two groups priced alike, with median margins of ${pts(s.localMedSpreadV!)} and ${pts(s.outMedSpreadV!)} over prime.`;
     return hi
       ? { h2: `${name} banks keep most of the lending`, p: `Lenders with their SBA address in ${name} made ${pc(s.localLenderShare)} of the state’s ${num(s.n)} approvals, ${ordinal(s.rank.localLenderShare)} of the 50 states and DC and well above the ${pc(NAT.local)} average.${locals.length ? ` ${list(locals.slice(0, 3))} ${locals.length > 1 ? 'rank' : 'ranks'} among the five busiest.` : ''}${price}`, short: `Home-state lenders made ${pc(s.localLenderShare)} of the loans, against ${pc(NAT.local)} nationwide.`,
-        faq: { q: `Do local banks make SBA loans in ${name}?`, a: `More than in most states. In ${FY}, ${pc(s.localLenderShare)} of the 7(a) loans for ${name} projects came from a lender whose address in the SBA file is in ${name}, against ${pc(NAT.local)} nationally.${locals.length ? ` ${list(locals.slice(0, 2))} ${locals.length > 1 ? 'were' : 'was'} among the busiest.` : ''} A local lender is a good first quote; a national SBA lender is a good second one.` } }
+        faq: { q: `Do local banks make SBA loans in ${name}?`, a: `More than in most states: ${pc(s.localLenderShare)} of the 7(a) loans for ${name} projects came from a lender whose address in the SBA file is in ${name}, against ${pc(NAT.local)} nationally.${locals.length ? ` ${list(locals.slice(0, 2))} ${locals.length > 1 ? 'were' : 'was'} among the busiest.` : ''} A local lender is a good first quote; a national SBA lender is a good second one.` } }
       : { h2: `Most ${name} loans come from out-of-state lenders`, p: `Only ${pc(s.localLenderShare)} of ${name}’s ${num(s.n)} approvals came from a lender based in the state (${pc(NAT.local)} on average).${outside.length ? ` The volume went to lenders that work across many states, led here by ${list(outside.slice(0, 3))}.` : ''}${price}`, short: `Only ${pc(s.localLenderShare)} of the loans came from lenders based in ${name}.`,
-        faq: { q: `Are SBA lenders in ${name} mostly local?`, a: `No. Only ${pc(s.localLenderShare)} of the ${FY} 7(a) loans for ${name} projects came from a lender whose SBA address is in the state, against ${pc(NAT.local)} nationally.${outside.length ? ` The busiest included ${list(outside.slice(0, 2))}, which lend from elsewhere.` : ''} Applying with one of them is done by phone and online, and the rules and caps are the same.` } };
+        faq: { q: `Are SBA lenders in ${name} mostly local?`, a: `No. Only ${pc(s.localLenderShare)} of the 7(a) loans for ${name} projects came from a lender whose SBA address is in the state, against ${pc(NAT.local)} nationally.${outside.length ? ` The busiest included ${list(outside.slice(0, 2))}, which lend from elsewhere.` : ''} Applying with one of them is done by phone and online, and the rules and caps are the same.` } };
   });
 
   add('size', (x) => x.medAmt, 1, (hi) => {
     const fee = E.upfrontFee({ amount: s.medAmt });
     return hi
-      ? { h2: 'Larger loans than most states', p: `The median ${name} approval was ${m(s.medAmt)}, ${ordinal(s.rank.medAmt)} of the 50 states and DC (${m(N.medAmt)} nationally). ${s.medAmt > 350000 ? `Above ${m(350000)} the variable cap is prime plus 3 points, ${r(E.maxRate(400000, 'variable'))} today, the tightest in the program` : `At that size the variable cap is prime plus ${formatNumber(E.maxSpread(s.medAmt, 'variable'), 1)} points, ${r(E.maxRate(s.medAmt, 'variable'))} today`}, and the ${P.fees7a.label} guaranty fee on the median loan is ${m(fee.fee)}.`, short: `The median loan, ${m(s.medAmt)}, was the ${ordinal(s.rank.medAmt)} largest of the 50 states and DC.`,
-        faq: { q: `Why are SBA loans in ${name} larger than average?`, a: `The median ${FY} approval for a ${name} project was ${m(s.medAmt)}, against ${m(N.medAmt)} nationally, because a larger share of loans financed real estate or the purchase of a business. Size changes the price: a larger loan has a lower rate cap, prime plus ${formatNumber(E.maxSpread(1e6, 'variable'), 1)} points above ${m(350000)}, but a higher guaranty fee rate.` } }
+      ? { h2: 'Larger loans than most states', p: `The median ${name} approval was ${m(s.medAmt)}, ${ordinal(s.rank.medAmt)} of the 50 states and DC (${m(N.medAmt)} nationally). ${s.medAmt > 350000 ? `Above ${m(350000)} the variable cap is prime plus 3 points, ${r(E.maxRate(400000, 'variable'))} today, the tightest in the program` : `At that size the variable cap is prime plus ${formatNumber(E.maxSpread(s.medAmt, 'variable'), 1)} points, ${r(E.maxRate(s.medAmt, 'variable'))} today`}, and the guaranty fee on the median loan is ${m(fee.fee)}.`, short: `The median loan, ${m(s.medAmt)}, was the ${ordinal(s.rank.medAmt)} largest of the 50 states and DC.`,
+        faq: { q: `Why are SBA loans in ${name} larger than average?`, a: `The median approval for a ${name} project was ${m(s.medAmt)}, against ${m(N.medAmt)} nationally, because a larger share of loans financed real estate or the purchase of a business. Size changes the price: a larger loan has a lower rate cap, prime plus ${formatNumber(E.maxSpread(1e6, 'variable'), 1)} points above ${m(350000)}, but a higher guaranty fee rate.` } }
       : { h2: 'Smaller loans, higher allowed margins', p: `Half of ${name}’s approvals were for ${m(s.medAmt)} or less, ${ordinal(52 - s.rank.medAmt)} smallest of the 50 states and DC (${m(N.medAmt)} nationally). SBA guarantees ${E.guarantyPct(s.medAmt)}% of a loan that size and the fee is ${m(fee.fee)}, but the variable rate may go up to prime plus ${formatNumber(E.maxSpread(s.medAmt, 'variable'), 1)} points, ${r(E.maxRate(s.medAmt, 'variable'))} today.`, short: `Loans were small: the median was ${m(s.medAmt)}, against ${m(N.medAmt)} nationally.`,
-        faq: { q: `What is the typical SBA loan size in ${name}?`, a: `Smaller than in most states: the median ${FY} 7(a) approval was ${m(s.medAmt)}, against ${m(N.medAmt)} nationally, and ${pc(s.bands[0] / s.n)} of loans were for ${m(50000)} or less. Small loans carry the widest allowed margin over prime, so comparing two quotes matters more than it does on a large loan.` } };
+        faq: { q: `What is the typical SBA loan size in ${name}?`, a: `Smaller than in most states: the median 7(a) loan approved ${FY} was ${m(s.medAmt)}, against ${m(N.medAmt)} nationally, and ${pc(s.bands[0] / s.n)} of loans were for ${m(50000)} or less. Small loans carry the widest allowed margin over prime, so comparing two quotes matters more than it does on a large loan.` } };
   });
 
   add('startup', (x) => age(x, 'startup'), 0.9, (hi) => hi
     ? { h2: 'Start-ups borrow a large share', p: `${pc(age(s, 'startup'))} of ${name}’s loans funded a business that was not yet open (${pc(NAT.startup)} nationwide). SBA’s lending rules ask a start-up to put in cash of its own (an equity injection) of at least ${P.sevenA.startupEquity}% of the total project cost, ${m(s.medAmt * P.sevenA.startupEquity / 90)} on a project financed by a median-size loan.`, short: `${pc(age(s, 'startup'))} of loans went to businesses not yet open.`,
-      faq: { q: `Can a start-up get an SBA loan in ${name}?`, a: `Yes, and more often than elsewhere: ${pc(age(s, 'startup'))} of ${name}’s ${FY} 7(a) loans financed a business that was not yet open, against ${pc(NAT.startup)} nationally. Expect to put in at least ${P.sevenA.startupEquity}% of the project cost yourself, and to show a business plan and projections, since there are no past tax returns to judge.` } }
+      faq: { q: `Can a start-up get an SBA loan in ${name}?`, a: `Yes, and more often than elsewhere: ${pc(age(s, 'startup'))} of ${name}’s 7(a) loans financed a business that was not yet open, against ${pc(NAT.startup)} nationally. Expect to put in at least ${P.sevenA.startupEquity}% of the project cost yourself, and to show a business plan and projections, since there are no past tax returns to judge.` } }
     : { h2: 'Few start-ups', p: `Businesses not yet open took ${pc(age(s, 'startup'))} of ${name}’s approvals, against ${pc(NAT.startup)} nationwide; established firms over two years old took ${pc(age(s, 'existing'))}. A going concern is judged on its tax returns and cash flow and skips the ${P.sevenA.startupEquity}% start-up equity rule.`, short: `Start-ups took only ${pc(age(s, 'startup'))} of approvals.` });
 
   add('buyout', (x) => age(x, 'buyout'), 0.9, (hi) => hi
     ? { h2: 'Many loans buy an existing business', p: `Changes of ownership were ${pc(age(s, 'buyout'))} of ${name}’s approvals (${pc(NAT.buyout)} nationally). SBA’s rules for buying a business govern them: the buyer’s equity, the valuation of the business and the debt service coverage are checked under their own rules, and a seller note can count toward equity only on stated terms.`, short: `${pc(age(s, 'buyout'))} of loans financed the purchase of a business.`,
-      faq: { q: `How common are SBA business acquisition loans in ${name}?`, a: `More common than average: ${pc(age(s, 'buyout'))} of ${name}’s ${FY} 7(a) approvals financed a change of ownership, against ${pc(NAT.buyout)} nationally. These loans follow SBA’s rules for buying a business, which set the equity, valuation and cash-flow tests. The median rate and the lender table on this page apply to them like any other 7(a) loan.` } }
+      faq: { q: `How common are SBA business acquisition loans in ${name}?`, a: `More common than average: ${pc(age(s, 'buyout'))} of ${name}’s 7(a) loans financed a change of ownership, against ${pc(NAT.buyout)} nationally. These loans follow SBA’s rules for buying a business, which set the equity, valuation and cash-flow tests. The median rate and the lender table on this page apply to them like any other 7(a) loan.` } }
     : { h2: 'Few business purchases', p: `Only ${pc(age(s, 'buyout'))} of ${name}’s approvals financed a change of ownership (${pc(NAT.buyout)} nationally). Most of the money went to owners expanding, equipping or adding working capital to a business they already run.`, short: `Business purchases were rare, ${pc(age(s, 'buyout'))} of loans.` });
 
   add('young', (x) => age(x, 'new'), 0.7, (hi) => hi
@@ -198,18 +200,18 @@ function observations(code: E.StateCode): Obs[] {
 
   add('express', exp, 1, (hi) => hi
     ? { h2: 'SBA Express carries much of the volume', p: `${pc(exp(s))} of ${name}’s approvals were SBA Express loans (${pc(NAT.express)} nationally). Express stops at ${m(P.sevenA.expressMax)}, carries a ${P.sevenA.guaranty.expressPct}% guaranty and lets the lender decide on its own forms; the fee is charged on that smaller guaranteed part.`, short: `${pc(exp(s))} of loans went through SBA Express.`,
-      faq: { q: `Is SBA Express common in ${name}?`, a: `Yes: ${pc(exp(s))} of ${name}’s ${FY} 7(a) approvals were Express loans, against ${pc(NAT.express)} nationally. Express is capped at ${m(P.sevenA.expressMax)} and guaranteed at ${P.sevenA.guaranty.expressPct}%, so its guaranty fee is lower than on a standard loan of the same size, while the maximum rate is the same.` } }
+      faq: { q: `Is SBA Express common in ${name}?`, a: `Yes: ${pc(exp(s))} of ${name}’s 7(a) loans were Express loans, against ${pc(NAT.express)} nationally. Express is capped at ${m(P.sevenA.expressMax)} and guaranteed at ${P.sevenA.guaranty.expressPct}%, so its guaranty fee is lower than on a standard loan of the same size, while the maximum rate is the same.` } }
     : { h2: 'Standard 7(a) more than Express', p: `Only ${pc(exp(s))} of ${name}’s approvals used SBA Express (${pc(NAT.express)} nationally); ${pc(s.programs.plp / s.n)} were made by Preferred Lenders under delegated authority, with the larger standard guaranty of ${P.sevenA.guaranty.smallPct}% or ${P.sevenA.guaranty.largePct}%.`, short: `Express was used for only ${pc(exp(s))} of loans.` });
 
   add('fixed', (x) => x.fixedShare, 0.8, (hi) => hi
     ? { h2: 'Fixed rates are frequent', p: `${pc(s.fixedShare)} of ${name}’s loans carried a fixed rate, ${ordinal(s.rank.fixedShare)} of the 50 states and DC (${pc(N.fixedShare)} nationally)${s.medF !== null ? `, with a median of ${r(s.medF)}` : ''}. A fixed rate has its own cap, prime plus 5 to 8 points by amount, and shields the payment from a rise in prime like the one of September 17, 2026.`, short: `${pc(s.fixedShare)} of loans had a fixed rate, against ${pc(N.fixedShare)} nationally.`,
-      faq: { q: `Do ${name} lenders offer fixed-rate SBA loans?`, a: `More than in most states: ${pc(s.fixedShare)} of ${name}’s ${FY} 7(a) loans were fixed-rate, against ${pc(N.fixedShare)} nationally${s.medF !== null ? `, with a median rate of ${r(s.medF)}` : ''}. The fixed cap runs from prime plus 5 points on large loans to prime plus 8 on the smallest. Ask each lender for both options and compare them.` } }
+      faq: { q: `Do ${name} lenders offer fixed-rate SBA loans?`, a: `More than in most states: ${pc(s.fixedShare)} of ${name}’s 7(a) loans were fixed-rate, against ${pc(N.fixedShare)} nationally${s.medF !== null ? `, with a median rate of ${r(s.medF)}` : ''}. The fixed cap runs from prime plus 5 points on large loans to prime plus 8 on the smallest. Ask each lender for both options and compare them.` } }
     : { h2: 'Nearly all variable', p: `Only ${pc(s.fixedShare)} of ${name}’s approvals were fixed-rate (${pc(N.fixedShare)} nationally). On the variable loans the margin is set for life but the payment follows prime, which was ${r(7)} in November 2025, ${r(6.75)} from December 11 and ${r(7)} again from September 17, 2026.`, short: `Variable rates dominated: only ${pc(s.fixedShare)} of loans were fixed.` });
 
   add('cap', (x) => x.atCapV, 1.1, (hi) => hi
-    ? { h2: 'Many loans priced at the ceiling', p: `${pc(s.atCapV!)} of ${name}’s variable loans were at the maximum SBA allows for their size, against ${pc(N.atCapV!)} nationally. Almost all of those are loans of ${m(50000)} or less, where the cap is prime plus ${formatNumber(E.maxSpread(1, 'variable'), 1)} points${s.atCapVBand[0] !== null ? `; in that band ${pc(s.atCapVBand[0])} of ${name}’s loans were at the cap` : ''}.`, short: `${pc(s.atCapV!)} of variable loans were priced at the SBA maximum.`,
-      faq: { q: `Are many SBA loans in ${name} at the maximum rate?`, a: `More than average: ${pc(s.atCapV!)} of ${name}’s ${FY} variable-rate 7(a) loans were priced at the SBA cap for their size, against ${pc(N.atCapV!)} nationally. The cap is legal, but most borrowers of the same size paid less, so a quote at the cap is the first thing to compare with another lender.` } }
-    : { h2: 'Few loans at the ceiling', p: `Only ${pc(s.atCapV!)} of ${name}’s variable loans were priced at the SBA maximum (${pc(N.atCapV!)} nationally). A quote at the cap would be out of line with what ${name} lenders usually charged.`, short: `Only ${pc(s.atCapV!)} of variable loans sat at the SBA maximum.` });
+    ? { h2: 'Many loans priced at the cap', p: `${pc(s.atCapV!)} of ${name}’s variable loans were at the SBA cap for their size, against ${pc(N.atCapV!)} nationally. Almost all of those are loans of ${m(50000)} or less, where the cap is prime plus ${formatNumber(E.maxSpread(1, 'variable'), 1)} points${s.atCapVBand[0] !== null ? `; in that band ${pc(s.atCapVBand[0])} of ${name}’s loans were at the cap` : ''}.`, short: `${pc(s.atCapV!)} of variable loans were priced at the SBA cap.`,
+      faq: { q: `Are many SBA loans in ${name} at the SBA cap?`, a: `More than average: ${pc(s.atCapV!)} of ${name}’s variable-rate 7(a) loans were priced at the SBA cap for their size, against ${pc(N.atCapV!)} nationally. The cap is legal, but most borrowers of the same size paid less, so a quote at the cap is the first thing to compare with another lender.` } }
+    : { h2: 'Few loans at the cap', p: `Only ${pc(s.atCapV!)} of ${name}’s variable loans were priced at the SBA cap (${pc(N.atCapV!)} nationally). A quote at the cap would be out of line with what ${name} lenders usually charged.`, short: `Only ${pc(s.atCapV!)} of variable loans sat at the SBA cap.` });
 
   add('rate', (x) => x.medVBand[1], 0.8, (hi) => s.medVBand[1] === null ? null : hi
     ? { h2: 'Mid-size loans priced above average', p: `On loans of ${E.BAND_LABELS[1]}, the median variable rate in ${name} was ${r(s.medVBand[1])}, against ${r(N.medVBand[1]!)} nationally, for the same cap and the same prime. The gap comes from the lenders active in the state, listed in the table above.`, short: `Mid-size loans were priced at a median of ${r(s.medVBand[1])}, above the national ${r(N.medVBand[1]!)}.` }
@@ -220,14 +222,14 @@ function observations(code: E.StateCode): Obs[] {
     if (!f5) return { h2: 'No 504 loans', p: `No 504 loan was approved for a ${name} project in ${FY}. Buildings and long-lived equipment were financed through 7(a) loans or outside SBA.`, short: `No 504 loan was approved for a ${name} project.` };
     const cd = f5.cdcs.length ? ` The busiest certified development ${f5.cdcs.length > 1 ? 'companies were' : 'company was'} ${list(f5.cdcs.map((c) => `${c.name} (${num(c.n)})`))}.` : '';
     return hi
-      ? { h2: '504 loans are well used', p: `${num(f5.n)} 504 loans for ${h0(f5.total)} were approved for ${name} projects, ${formatNumber(per504(s) * 100, 1)} for every 100 7(a) loans against ${formatNumber(NAT.r504 * 100, 1)} nationally, with a median debenture of ${m(f5.medAmt)}.${cd}`, short: `The state used 504 loans heavily: ${num(f5.n)} approvals for ${h0(f5.total)}.`,
-        faq: { q: `Who arranges SBA 504 loans in ${name}?`, a: `Certified development companies. In ${FY}, ${num(f5.n)} 504 loans were approved for ${name} projects${f5.cdcs.length ? `, most often through ${list(f5.cdcs.slice(0, 2).map((c) => c.name))}` : ''}. The CDC funds up to ${P.fees504.structure.cdc}% of a building or equipment project with a debenture at a fixed rate; a bank lends about half and the owner puts in at least ${P.fees504.structure.borrower}%.` } }
+      ? { h2: '504 loans are well used', p: `${num(f5.n)} 504 loans for ${h0(f5.total)} were approved for ${name} projects, ${formatNumber(per504(s) * 100, 1)} for every 100 7(a) loans against ${formatNumber(NAT.r504 * 100, 1)} nationally, with a median CDC loan of ${m(f5.medAmt)}.${cd}`, short: `The state used 504 loans heavily: ${num(f5.n)} approvals for ${h0(f5.total)}.`,
+        faq: { q: `Who arranges SBA 504 loans in ${name}?`, a: `Certified development companies. Over ${FY}, ${num(f5.n)} 504 loans were approved for ${name} projects${f5.cdcs.length ? `, most often through ${list(f5.cdcs.slice(0, 2).map((c) => c.name))}` : ''}. The CDC funds up to ${P.fees504.structure.cdc}% of a building or equipment project with a fixed-rate loan backed by SBA; a bank lends about half and the owner puts in at least ${P.fees504.structure.borrower}%.` } }
       : { h2: '504 lending is light', p: `${name} had ${num(f5.n)} 504 approvals (${h0(f5.total)}), ${formatNumber(per504(s) * 100, 1)} for every 100 7(a) loans against ${formatNumber(NAT.r504 * 100, 1)} nationally.${cd}`, short: `504 lending was light, ${num(f5.n)} approvals.` };
   });
 
   add('franchise', (x) => x.franchiseShare, 0.8, (hi) => hi
     ? { h2: 'Franchise units are frequent', p: `${pc(s.franchiseShare)} of ${name}’s loans financed a franchise (${pc(N.franchiseShare)} nationally)${s.franchises.length ? `; the brands seen most often were ${list(s.franchises.map((f) => `${f.name} (${num(f.n)})`))}` : ''}. A franchise brand must meet SBA’s eligibility rules before its units can be financed.`, short: `Franchises took ${pc(s.franchiseShare)} of loans.`,
-      faq: { q: `Which franchises get SBA loans in ${name}?`, a: `${pc(s.franchiseShare)} of ${name}’s ${FY} 7(a) loans went to franchise units, against ${pc(N.franchiseShare)} nationally${s.franchises.length ? `. The most frequent brands were ${list(s.franchises.map((f) => f.name))}` : ''}. The lender checks the brand and the franchise agreement against SBA’s rules; the rate cap and the guaranty fee are the same as for an independent business.` } }
+      faq: { q: `Which franchises get SBA loans in ${name}?`, a: `${pc(s.franchiseShare)} of ${name}’s 7(a) loans approved ${FY} went to franchise units, against ${pc(N.franchiseShare)} nationally${s.franchises.length ? `. The most frequent brands were ${list(s.franchises.map((f) => f.name))}` : ''}. The lender checks the brand and the franchise agreement against SBA’s rules; the rate cap and the guaranty fee are the same as for an independent business.` } }
     : { h2: 'Few franchise loans', p: `Franchise units took ${pc(s.franchiseShare)} of ${name}’s approvals, below the ${pc(N.franchiseShare)} national share; independent businesses took nearly all the rest.`, short: `Franchises took only ${pc(s.franchiseShare)} of loans.` });
 
   add('revolver', (x) => x.revolverShare, 0.8, (hi) => hi
@@ -246,7 +248,7 @@ function observations(code: E.StateCode): Obs[] {
     ? { h2: `One lender stands out: ${shortBank(L[0].name)}`, p: `${shortBank(L[0].name)} made ${pc(topShare(s))} of ${name}’s approvals by itself, ${num(L[0].n)} loans with a median of ${m(L[0].medAmt)}${L[0].medV !== null ? ` and a median variable rate of ${r(L[0].medV)}` : ''}.${natLender(L[0].name)?.atCapV != null ? ` Across all its loans nationally, ${pc(natLender(L[0].name)!.atCapV!)} of its variable loans were at the SBA cap.` : ''}`, short: `${shortBank(L[0].name)} alone made ${pc(topShare(s))} of the loans.`,
       faq: { q: `Which lender makes the most SBA loans in ${name}?`, a: `${shortBank(L[0].name)}, by a wide margin: ${num(L[0].n)} of the ${num(s.n)} 7(a) loans approved for ${name} projects in ${FY}, with a median loan of ${m(L[0].medAmt)}. It was followed by ${list(L.slice(1, 3).map((l) => `${shortBank(l.name)} (${num(l.n)})`))}. Being the busiest says nothing about price; compare its quote with the medians on this page.` } }
     : { h2: 'No dominant lender', p: `The busiest lender, ${shortBank(L[0].name)}, made only ${pc(topShare(s))} of ${name}’s approvals; ${num(s.lenderCount)} lenders shared the rest. With that many lenders active, a second and third quote are easy to get.`, short: `No lender dominated: the busiest made ${pc(topShare(s))} of loans.`,
-      faq: { q: `Which lenders are most active for SBA loans in ${name}?`, a: `No single one dominates. In ${FY} the busiest were ${list(L.slice(0, 3).map((l) => `${shortBank(l.name)} (${num(l.n)} loans)`))}, out of ${num(s.lenderCount)} lenders that made at least one 7(a) loan for a ${name} project. The table on this page gives each one’s median loan and median variable rate.` } });
+      faq: { q: `Which lenders are most active for SBA loans in ${name}?`, a: `No single one dominates. The busiest were ${list(L.slice(0, 3).map((l) => `${shortBank(l.name)} (${num(l.n)} loans)`))}, out of ${num(s.lenderCount)} lenders that made at least one 7(a) loan for a ${name} project. The table on this page gives each one’s median loan and median variable rate.` } });
 
   add('density', density, 0.7, (hi) => hi
     ? { h2: 'Many small lenders', p: `${num(s.lenderCount)} different lenders made at least one ${name} loan, about ${num(density(s) * 100)} per 100 loans, one of the widest fields in the country for the volume.`, short: `${num(s.lenderCount)} lenders were active, a wide field for the volume.` }
@@ -304,14 +306,14 @@ function page(code: E.StateCode, i: number): PageDef {
     `SBA Loans ${name}: Rates, Lenders, Loan Size`,
     `SBA Loans ${name}: Rates and Top Lenders`,
     `SBA Loans in ${name} 2026: Rates, Top Lenders`,
-    `SBA Loans in ${name}: ${FY} Rates and Lenders`,
+    `SBA Loans in ${name}: ${FYS} Rates and Lenders`,
   ], 50, 60);
   const description = fit([
-    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FY}: median ${m(s.medAmt)}, rates paid, busiest lenders and 504 activity, plus your payment at today’s prime.`,
-    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FY}: median ${m(s.medAmt)}, the rates paid, the busiest lenders and 504 activity, with your payment today.`,
-    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FY}: median ${m(s.medAmt)}, rates borrowers paid, busiest lenders, 504 loans, and your own monthly payment.`,
-    `${num(s.n)} SBA 7(a) loans were approved for ${name} projects in ${FY}: median ${m(s.medAmt)}, rates paid, busiest lenders and 504 loans, with a payment calculator.`,
-    `${num(s.n)} SBA 7(a) loans approved in ${name}, ${FY}: median ${m(s.medAmt)}, rates paid, busiest lenders, 504 loans and your payment at today’s prime rate of interest.`,
+    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FYS}: median ${m(s.medAmt)}, rates paid, busiest lenders and 504 activity, plus your payment at today’s prime.`,
+    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FYS}: median ${m(s.medAmt)}, the rates paid, the busiest lenders and 504 activity, with your payment today.`,
+    `${num(s.n)} SBA 7(a) loans approved in ${name} in ${FYS}: median ${m(s.medAmt)}, rates borrowers paid, busiest lenders, 504 loans, and your own monthly payment.`,
+    `${num(s.n)} SBA 7(a) loans were approved for ${name} projects in ${FYS}: median ${m(s.medAmt)}, rates paid, busiest lenders and 504 loans, with a payment calculator.`,
+    `${num(s.n)} SBA 7(a) loans approved in ${name}, ${FYS}: median ${m(s.medAmt)}, rates paid, busiest lenders, 504 loans and your payment at today’s prime rate of interest.`,
   ], 150, 160);
   const build = (k: number) => `${name}, ${FY}: ${num(s.n)} SBA 7(a) approvals for ${h0(s.total)} (${ordinal(s.rank.n)} of the 50 states and DC, SBA file of ${displayDate(E.F.asOf, 'en-US')}). ${obs.slice(0, k).map((o) => o.short).join(' ')} Today’s cap on a ${m(Math.round(s.medAmt / 1000) * 1000)} variable loan: ${r(E.maxRate(s.medAmt, 'variable'))}.`;
   let k = 4;
@@ -329,9 +331,9 @@ function page(code: E.StateCode, i: number): PageDef {
     related: ['sba-loans-by-state', 'sba-loan-rates', 'sba-lenders', 'home'],
     sources: ['foia', 'fees7a', 'sop', 'prime'],
     nav: name,
-    card: `${num(s.n)} approvals in ${FY}, median ${m(s.medAmt)}.`,
+    card: `${num(s.n)} loans approved ${FY}, median ${m(s.medAmt)}.`,
     title, description,
-    h1: `SBA loans in ${name}: ${num(s.n)} approvals in ${FY}, median ${m(s.medAmt)}`,
+    h1: `SBA loans in ${name}: ${num(s.n)} approved in 12 months, median ${m(s.medAmt)}`,
     intro: `${obs[0].short} ${obs[1].short}`,
     resume: () => resume,
     faqs: () => faqs,
@@ -340,9 +342,9 @@ function page(code: E.StateCode, i: number): PageDef {
       // Home state written out (naive test of 2026-11-08: “Based in Texas?” answered “FL”).
       const home = (hq: string) => (hq === code ? `${name} (in-state)` : hq in E.F.states ? E.stateName(hq as E.StateCode) : hq);
       const lenderRows = s.lenders.map((l) => [shortBank(l.name), num(l.n), m(l.medAmt), l.medV !== null ? r(l.medV) : 'n/a', home(l.hq)]);
-      const tbl = h.table(['Lender', `${FY} loans`, 'Median loan', 'Median variable rate', 'Lender’s home state'], lenderRows, `Five busiest SBA 7(a) lenders for ${name} projects, ${FY}. SBA FOIA file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
+      const tbl = h.table(['Lender', `Loans, ${FY}`, 'Median loan', 'Typical variable rate', 'Lender’s home state'], lenderRows, `Five busiest SBA 7(a) lenders for ${name} projects, loans approved ${FY}. SBA’s public loan file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
       const bandRows = E.BAND_LABELS.map((lab, k) => [lab, num(s.bands[k]), s.medVBand[k] !== null ? r(s.medVBand[k]!) : 'too few', r(E.maxRate([50000, 250000, 350000, 1000000][k], 'variable'))]);
-      const tbl2 = h.table(['Loan size', 'Loans', `Median variable rate, ${FY}`, 'SBA maximum today'], bandRows, `Medians set at approval (prime ${r(6.75)} to ${r(7)}); maximum on prime ${r(P.prime.rate)} of ${h.date(P.prime.date)}. Cells under ${E.F.minCell} loans are not shown.`, ['l', 'r', 'r', 'r']);
+      const tbl2 = h.table(['Loan size', 'Loans', `Typical variable rate, ${FY}`, 'SBA cap today'], bandRows, `Typical = median, set at approval (prime ${r(6.75)} to ${r(7)}); SBA cap on prime ${r(P.prime.rate)} of ${h.date(P.prime.date)}. Cells under ${E.F.minCell} loans are not shown.`, ['l', 'r', 'r', 'r']);
       const where = s.counties.length ? `<p>Counties with the most approvals: ${list(s.counties.map((c) => `${c.name} (${num(c.n)})`))}. Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>` : `<p>Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>`;
       return tbl + parts.slice(0, 4).join('') + tbl2 + parts.slice(4).join('') + where + `<p>All ${h.a('sba-loans-by-state', 'states compared')}.</p>`;
     },

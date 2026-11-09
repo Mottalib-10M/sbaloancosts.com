@@ -1,6 +1,6 @@
 /** Writing helpers handed to every page: links, numbers from the engine, tables, sources. */
 import { route, ROUTES } from '../i18n/routes';
-import { P, type SourceKey } from './engine/params';
+import { P, type SourceKey, DATA_YEAR, FEES_NOW, FEES_PREV } from './engine/params';
 import * as E from './engine/sba';
 import { formatMoney, formatNumber, displayDate } from './format';
 import { pct } from './pct';
@@ -49,7 +49,11 @@ export function helpers(strict = false) {
     date: (iso: string) => displayDate(iso, 'en-US'),
     ml: monthLabel,
     read: displayDate(P.retrieved_at, 'en-US'),
-    fy: `FY ${E.F.fy}`,
+    /** Loans of the SBA file, written as months (“Oct. 2025–Sept. 2026”), never “FY 2026”. */
+    fy: DATA_YEAR,
+    /** Fee schedule in force and the previous one, as months. */
+    feesNow: FEES_NOW,
+    feesPrev: FEES_PREV,
     table,
     /** Link to an official source of the parameter file. */
     src: (key: SourceKey, text?: string) => { const s = P.sources[key]; return `<a href="${s.url}" target="_blank" rel="nofollow noopener noreferrer">${text ?? s.label.en}</a>`; },

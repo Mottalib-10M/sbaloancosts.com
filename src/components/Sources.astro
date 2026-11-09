@@ -42,10 +42,10 @@ const sources: Src[] = Object.values((P as { sources?: Record<string, Src> }).so
     <p>{`${intro ?? INTRO[lang] ?? INTRO.en} ${/^\d{4}-\d{2}-\d{2}$/.test(P.retrieved_at) ? displayDate(P.retrieved_at, LANG_TAGS[lang] ?? lang) : P.retrieved_at}.`}</p>
     {/* Liste repliée, propre au site : quatorze sources sur l'accueil. */}
     <details>
-      <summary class="cursor-pointer font-medium text-accent-700">{`Show the ${sources.length} official pages`}</summary>
+      <summary class="cursor-pointer font-medium text-accent-700 underline underline-offset-2">{`Check every figure: open the ${sources.length} official pages (links)`}</summary>
       <ul>
         {sources.map((s) => (
-          <li><a href={s.url} rel="nofollow noopener" target="_blank">{s.label[lang] ?? s.label.en}</a></li>
+          <li><a href={s.url} rel="nofollow noopener" target="_blank">{s.label[lang] ?? s.label.en} ↗</a></li>
         ))}
       </ul>
     </details>
