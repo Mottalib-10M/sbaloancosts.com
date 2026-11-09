@@ -33,7 +33,7 @@ export default definePage({
     const rows = L.map((l) => [shortBank(l.name), l.hq, h.num(l.n), h.m(l.medAmt), l.medSpreadV !== null ? formatNumber(l.medSpreadV, 2) : 'n/a', l.atCapV !== null ? h.pc(l.atCapV) : 'n/a', h.pc(l.expressShare)]);
     const small = L.filter((l) => l.medVBand[0] !== null).sort((a, b) => a.medVBand[0]! - b.medVBand[0]!);
     const wide = L.filter((l) => l.states >= 50).map((l) => shortBank(l.name));
-    return `<h2>The 25 busiest 7(a) lenders</h2>
+    return `<h2>The 25 busiest SBA 7(a) lenders</h2>
 ${h.table(['Lender', 'Based in', 'Loans', 'Median loan', 'Typical margin over prime', 'Variable loans at the cap', 'Through Express'], rows, `SBA’s public 7(a) loan file of ${h.date(E.F.asOf)}, loans approved ${h.fy}. Margin = rate at approval less the prime of the first business day of that month.`, ['l', 'l', 'r', 'r', 'r', 'r', 'r'])}
 <h2>Same size of loan, different prices</h2>
 <p>The fairest comparison is between loans of the same size. On loans of ${h.m(50000)} or less, where the cap at approval was prime plus ${formatNumber(E.maxSpread(50000, 'variable'), 1)}, the median variable rate went from ${h.r(small[0].medVBand[0]!)} at ${shortBank(small[0].name)} to ${h.r(small[small.length - 1].medVBand[0]!)} at ${shortBank(small[small.length - 1].name)}.</p>

@@ -8,8 +8,8 @@ import { route, type Locale } from '../i18n/routes';
 import type { FAQItem } from '../lib/seo';
 import { libellesTrame } from '../lib/libelles-trame';
 interface BreadcrumbItem { label: string; href?: string }
-interface Props { title: string; description: string; lang: Locale; canonical?: string; ogImage?: string; noindex?: boolean; jsonLd?: string[]; related?: Array<{ href: string; name: string; description: string }>; faqs?: FAQItem[]; sources?: Array<{ name: string; url: string }>; breadcrumbs?: BreadcrumbItem[]; showAuthor?: boolean; dateEnHaut?: boolean; faqOuverte?: number }
-const { title, description, lang, canonical, ogImage, noindex = false, jsonLd = [], related = [], faqs = [], sources = [], breadcrumbs = [], showAuthor = true, dateEnHaut = false, faqOuverte = -1 } = Astro.props;
+interface Props { title: string; description: string; lang: Locale; canonical?: string; ogImage?: string; noindex?: boolean; jsonLd?: string[]; related?: Array<{ href: string; name: string; description: string }>; faqs?: FAQItem[]; sources?: Array<{ name: string; url: string }>; breadcrumbs?: BreadcrumbItem[]; showAuthor?: boolean; dateEnHaut?: boolean; faqOuverte?: number; faqTitle?: string }
+const { title, description, lang, canonical, ogImage, noindex = false, jsonLd = [], related = [], faqs = [], sources = [], breadcrumbs = [], showAuthor = true, dateEnHaut = false, faqOuverte = -1, faqTitle } = Astro.props;
 const ui = t(lang);
 ---
 <BaseLayout title={title} description={description} lang={lang} canonical={canonical} ogImage={ogImage} noindex={noindex} jsonLd={jsonLd} breadcrumbs={breadcrumbs}>
@@ -22,7 +22,7 @@ const ui = t(lang);
     <slot />
     {/* FAQ (testeurs naïfs du 2026-11-08) : une aide localisée dit que les questions s'ouvrent, et une question
          peut être ouverte d'emblée (`faqOuverte` = son rang, ou `open: true` sur la question). */}
-    {faqs.length > 0 && (<section class="mt-12" id="faq"><h2 class="mb-2 text-2xl font-bold text-navy-900">{ui.faqTitle}</h2><p data-chrome data-faq-aide class="mb-4 text-sm text-navy-600">{libellesTrame(lang).faqAide}</p><div class="space-y-3">
+    {faqs.length > 0 && (<section class="mt-12" id="faq"><h2 class="mb-2 text-2xl font-bold text-navy-900">{faqTitle ?? ui.faqTitle}</h2><p data-chrome data-faq-aide class="mb-4 text-sm text-navy-600">{libellesTrame(lang).faqAide}</p><div class="space-y-3">
       {faqs.map((faq, i) => (<details open={faq.open || i === faqOuverte} class="group rounded-lg border border-navy-200 bg-white"><summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 font-medium text-navy-900">{faq.q}<svg class="h-5 w-5 shrink-0 text-navy-400 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" /></svg></summary><div class="px-5 pb-4 text-navy-600"><p>{faq.a}</p></div></details>))}
     </div></section>)}
     {/* Bas de page plus court sur téléphone (mise en conformité du 2026-11-09) : les pages voisines et les sources

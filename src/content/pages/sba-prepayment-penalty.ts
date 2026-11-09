@@ -18,7 +18,7 @@ export default definePage({
   title: 'SBA Prepayment Penalty: the 5-3-1 Recoupment Fee Calculator',
   description: 'SBA prepayment penalty on 7(a) loans of 15 years or more: 5%, 3% or 1% of prepayments above 25% in the first three years, with the exact rule and a calculator.',
   h1: 'SBA prepayment penalty: when the 5-3-1 fee applies and how much it is',
-  intro: 'SBA charges a fee on large early repayments of long 7(a) loans, and only in the first three years. Type your loan and the amount you plan to repay.',
+  intro: 'The SBA prepayment penalty is a fee on large early repayments of long 7(a) loans, charged only in the first three years. Type your loan and the amount you plan to repay.',
   resume: (h) => `SBA’s prepayment penalty on 7(a) loans is called the subsidy recoupment fee, and it is set by SBA’s loan regulations. It applies only when three conditions are all met: the loan has a maturity of ${R.minTermYears} years or more; the borrower repays principal ahead of schedule during one of the first three 12-month periods after the first disbursement; and the prepayments in that period exceed ${R.thresholdPct}% of the highest principal balance in it. The fee is then ${R.byYear[0]}% of all prepayments made in the first year, ${R.byYear[1]}% in the second and ${R.byYear[2]}% in the third. From the fourth year there is no SBA fee. Loans shorter than ${R.minTermYears} years, the usual case for equipment and working capital, never pay it. Repaying ${h.m(400000)} in the second year on a ${h.m(1_000_000)}, 25-year loan costs ${h.m(E.recoupmentFee(1_000_000, 25, 2, 400000).fee)}; repaying ${h.m(250000)} costs nothing, because it stays within ${R.thresholdPct}%. Selling the business or refinancing in those years counts as a prepayment.`,
   faqs: (h) => [
     { q: 'Does the SBA prepayment fee apply to a 10-year loan?', a: `No. The subsidy recoupment fee applies only to loans with a maturity of ${R.minTermYears} years or more, which in practice means loans that are mostly real estate. In ${h.fy}, ${h.pc(N.longTermShare)} of 7(a) loans had a term of ${R.minTermYears} years or longer; the other loans can be repaid early without any SBA fee.` },
@@ -28,7 +28,7 @@ export default definePage({
   body: (h) => {
     const loan = 1_000_000;
     const rows = [100000, 250000, 300000, 500000, 1_000_000].flatMap((paid) => [[h.m(paid), ...[1, 2, 3, 4].map((y) => h.m(E.recoupmentFee(loan, 25, y, paid).fee))]]);
-    return `<h2>The fee on a ${h.m(loan)}, 25-year loan</h2>
+    return `<h2>The prepayment penalty on a ${h.m(loan)}, 25-year loan</h2>
 ${h.table(['Prepaid in the period', 'Year 1', 'Year 2', 'Year 3', 'Year 4+'], rows, `SBA loan regulations (see Sources). Threshold: ${R.thresholdPct}% of the highest principal balance in the period, about ${h.m(loan * R.thresholdPct / 100)} here.`, ['r', 'r', 'r', 'r', 'r'])}
 <p>The rule has a cliff. Once the total for the period exceeds the threshold, the fee is charged on everything prepaid in that period, not only on the part above ${R.thresholdPct}%: ${h.m(250000)} costs nothing in year one, ${h.m(300000)} costs ${h.m(E.recoupmentFee(loan, 25, 1, 300000).fee)}.</p>
 <h2>Who it actually concerns</h2>

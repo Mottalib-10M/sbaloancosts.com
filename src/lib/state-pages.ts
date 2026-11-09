@@ -334,7 +334,9 @@ function page(code: E.StateCode, i: number): PageDef {
     card: `${num(s.n)} loans approved ${FY}, median ${m(s.medAmt)}.`,
     title, description,
     h1: `SBA loans in ${name}: ${num(s.n)} approved in 12 months, median ${m(s.medAmt)}`,
-    intro: `${obs[0].short} ${obs[1].short}`,
+    // RECETTE §13 (2026-11-09): the searched term, “SBA loans in <state>”, in the standfirst and in one H2.
+    intro: `SBA loans in ${name}, in short: ${obs[0].short} ${obs[1].short}`,
+    faqTitle: `Questions on SBA loans in ${name}`,
     resume: () => resume,
     faqs: () => faqs,
     body: (h: Helpers) => {

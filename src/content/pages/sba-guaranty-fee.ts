@@ -37,7 +37,7 @@ export default definePage({
     const jump = E.upfrontFee({ amount: 150001 }).fee - E.upfrontFee({ amount: 150000 }).fee;
     const j7 = E.upfrontFee({ amount: 700001 }).fee - E.upfrontFee({ amount: 700000 }).fee;
     const fx = E.cost7a({ amount: 500000, years: 10, rate: E.maxRate(500000, 'variable') });
-    return `<h2>The schedule on real amounts</h2>
+    return `<h2>The SBA guaranty fee on real amounts</h2>
 ${h.table(['Loan', 'Guaranteed', 'Fee now', 'Share of the loan', 'Manufacturer, farm, food supplier or rural, now', `Manufacturer, ${h.feesPrev}`], rows, `Standard 7(a), term over 12 months. “Now”: loans approved from ${h.date(P.fy.from)}. SBA fee notices listed under Sources.`, ['r', 'r', 'r', 'r', 'r', 'r'])}
 <h2>Two loan amounts where the fee jumps</h2>
 <p>Up to ${h.m(T[1].upTo)} the fee is not graduated like an income tax: the whole guaranteed amount takes the rate of its band. Only on loans above ${h.m(T[1].upTo)} does part of it, the guaranteed amount above ${h.m(1_000_000)}, pay a second rate, ${T[2].rateOver1M}%. Going from ${h.m(150000)} to ${h.m(150001)} drops the guaranty from ${P.sevenA.guaranty.smallPct}% to ${P.sevenA.guaranty.largePct}% but raises the rate from ${T[0].rate}% to ${T[1].rate}%, adding ${h.m(jump)} to the fee for one extra dollar. Crossing ${h.m(T[1].upTo)} adds ${h.m(j7)}. If a project is close to either line, borrowing a little less, or putting in a little more cash, can be worth more than a quarter point of rate.</p>

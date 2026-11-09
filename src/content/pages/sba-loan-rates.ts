@@ -34,7 +34,7 @@ export default definePage({
     });
     const months = ym.map((k) => [h.ml(k), h.num(N.months[k as keyof typeof N.months]), h.r(N.primeByMonth[k as keyof typeof N.primeByMonth])]);
     const hist = P.primeHistory.changes.map(([d, r]) => `${h.date(d as string)}: ${h.r(r as number)}`).join('; ');
-    return `<h2>Where the rates really fell</h2>
+    return `<h2>Where SBA loan rates really fell</h2>
 <p>Each row is a size band, cut at the same amounts as SBA’s rate steps. Read it as “a quarter of borrowers paid this rate or less”, then half (the typical rate, or median), then three quarters. These are rates at approval, on the prime of that month, which was ${h.r(6.75)} for most of the year; on today’s ${h.r(P.prime.rate)} prime each would be a quarter point higher for the same margin.</p>
 ${h.table(['Loan size', 'Variable loans', 'A quarter paid up to', 'Half paid up to (typical)', 'Three quarters paid up to', 'Priced at the cap'], bands, `SBA’s public 7(a) loan file of ${h.date(E.F.asOf)}, variable-rate loans approved ${h.fy}.`, ['l', 'r', 'r', 'r', 'r', 'r'])}
 <p>On loans of ${h.m(50000)} or less, the three-quarter mark is the cap itself. Above ${h.m(350000)} the spread narrows: three quarters of loans were at ${h.r(N.rates.V[3].p[15])} or less, while the cap at approval was prime plus 3. Fixed rates were rarer, ${h.pc(N.fixedShare)} of approvals, with a median of ${h.r(N.medF!)}, and only ${h.pc(N.atCapF!)} at their own cap.</p>

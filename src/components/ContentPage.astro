@@ -35,7 +35,7 @@ const sources = page.sources.map((k) => ({ name: P.sources[k].label.en, url: P.s
 const chunks: Array<{ html?: string; tool?: ToolDef }> = [];
 for (let i = 0; i < parts.length; i += 3) { chunks.push({ html: parts[i] }); if (parts[i + 1]) chunks.push({ tool: { kind: parts[i + 1], props: parts[i + 2] ? JSON.parse(parts[i + 2]) : undefined } }); }
 ---
-<PageLayout title={page.title} description={page.description} lang={lang} jsonLd={jsonLd} faqs={faqs} related={related} sources={sources} breadcrumbs={[{ label: page.nav }]} dateEnHaut={false}>
+<PageLayout title={page.title} description={page.description} lang={lang} jsonLd={jsonLd} faqs={faqs} related={related} sources={sources} faqTitle={page.faqTitle} breadcrumbs={[{ label: page.nav }]} dateEnHaut={false}>
   <article>
     <header class="mb-3">
       <p class="kicker">{page.kicker ?? groupLabel(page.group)}</p>

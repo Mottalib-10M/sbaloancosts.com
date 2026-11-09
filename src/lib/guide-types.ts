@@ -26,6 +26,8 @@ export interface PageDef {
   description: string;
   h1: string;
   intro: string;
+  /** Heading of the FAQ block (defaults to the site-wide one). */
+  faqTitle?: string;
   /** Kicker above the H1 (defaults to the group label). */
   kicker?: string;
   /** Citable block, 120 words or more, one paragraph (RECETTE §21). */
