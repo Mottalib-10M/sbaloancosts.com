@@ -1,0 +1,22 @@
+---
+/** Embeddable calculator (iframe): no navigation, noindex, out of the sitemap (astro.config). */
+import '../../styles/global.css';
+import MiniSim from '../../components/calc/MiniSim';
+import { SITE_URL, SITE_NAMES } from '../../data/site-config';
+import { route } from '../../i18n/routes';
+import { t } from '../../i18n/ui';
+---
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SBA loan cost calculator (widget)</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={`${SITE_URL}/en/`} />
+  </head>
+  <body class="bg-white p-2 text-navy-900">
+    <MiniSim client:load kind="cost" href={`${SITE_URL}${route('method', 'en')}`} defaults={{}} primary={true} idPrefix="w" />
+    <p class="mt-2 text-center text-xs text-navy-600"><a href={`${SITE_URL}/en/`} target="_blank" rel="noopener" class="underline">{SITE_NAMES.en}</a> · Independent tool by Radif Partners, not a lender and not affiliated with the U.S. Small Business Administration · worked out in your browser</p>
+    <p class="mt-1 text-center text-xs text-navy-600">{t('en').attribution}</p>
+  </body>
+</html>

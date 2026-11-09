@@ -1,0 +1,27 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { AUTHOR_NAME, CONTACT_EMAIL, LAST_UPDATED, SITE_NAMES } from '../../data/site-config';
+import { route } from '../../i18n/routes';
+const lang = 'en';
+---
+<PageLayout title={`Editorial policy of ${SITE_NAMES[lang]}: sources, data, corrections`} description="Which SBA notices, rules and loan files SBA Loan Costs reads, why it names no lender as a recommendation and shows no borrower, how it tests and corrects figures." lang={lang} noindex={true} breadcrumbs={[{ label: 'Editorial policy' }]} showAuthor={false}>
+  <div class="prose prose-slate max-w-none">
+    <h1>Editorial and corrections policy</h1>
+    <p>People use these pages before signing a loan that runs ten or twenty-five years. A stale fee or a wrong cap can cost them thousands of dollars. So every rule and fee is tied to the official text it was read in, with the date, and every amount is computed by the engine, never typed into a page.</p>
+    <h2>Sources we use</h2>
+    <ul>
+      <li>SBA information notices on 7(a) and 504 fees for each fiscal year;</li>
+      <li>SBA SOP 50 10 8.1 (lender and development company loan programs) and the notice of its technical updates;</li>
+      <li>the Federal Register notice on maximum fixed 7(a) rates, and 13 CFR part 120 on the eCFR;</li>
+      <li>the Federal Reserve’s H.15 release for the prime rate and the 5-year Treasury, and its daily prime series on FRED;</li>
+      <li>SBA’s 7(a) and 504 FOIA loan files, a U.S. Government Work.</li>
+    </ul>
+    <h2>What we refuse to print</h2><p>Rates or fees we could not read in an official text; “typical” bank rates from third-party guides; any promise that a reader qualifies. We name lenders only as facts from SBA’s file, never as a recommendation, and take no payment from any lender. No borrower is named or can be identified: the loan file is used only in aggregates, and cells of fewer than ten loans are not shown.</p>
+    <h2>Testing</h2><p>Every build runs the engine tests: the fee examples of SOP 50 10 8.1, the 504 debenture example, the microloan rate formula, the prepayment fee and the totals of the loan file. A failing test stops the build.</p>
+    <h2>Review</h2><p>Figures are reread by hand when SBA publishes a new fee notice (each September for October 1), a new SOP, or a new quarterly loan file, and when prime changes. Nothing is fetched automatically and no schedule is promised. Each page shows the date the figures were last read.</p>
+    <h2>Corrections</h2>
+    <ol><li>We open the source again.</li><li>We correct the parameter file, the engine or the counting script and add a test for the case.</li><li>The pages rebuild and show the new date.</li></ol>
+    <p>Write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Published by {AUTHOR_NAME}.</p>
+    <h2>Independence</h2><p>No lender, broker or government body pays for or reviews what is published here; the site takes no referral fee and carries no affiliate link. It is not affiliated with the U.S. Small Business Administration. See also the <a href={route('method', lang)}>method</a>. Version: {LAST_UPDATED}.</p>
+  </div>
+</PageLayout>

@@ -1,0 +1,53 @@
+---
+/**
+ * Renders a page of `src/content/pages/`. Order (RECETTE §5, §9.3, §21): H1 and standfirst, the
+ * independence line (§12.1), the tool on the first screen, the folded citable block, then the body.
+ * FAQ, related pages, sources and the author box come from PageLayout, the FAQ shown and marked up from
+ * the same list (§7).
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import Clamp from './Clamp.astro';
+import Tool from './Tool.astro';
+import { route, ROUTES } from '../i18n/routes';
+import { label, groupLabel } from '../i18n/nav';
+import { t } from '../i18n/ui';
+import { pageById } from '../lib/guides';
+import { helpers } from '../lib/helpers';
+import { P } from '../lib/engine/params';
+import { articleSchema, faqSchema, breadcrumbSchema, webPageSchema, webApplicationSchema } from '../lib/seo';
+import { AUTHOR_NAME } from '../data/site-config';
+import type { PageDef, ToolDef } from '../lib/guide-types';
+interface Props { page: PageDef }
+const { page } = Astro.props;
+const lang = 'en';
+const ui = t(lang);
+const path = route(page.id, lang);
+const h = helpers(true);
+const faqs = page.faqs(h);
+const parts = page.body(h).split(/<!--tool:([a-z0-9:-]+)(?:\|(\{.*?\}))?-->/);
+const jsonLd = [articleSchema({ title: page.h1, description: page.description, path, lang }), webPageSchema({ name: page.h1, description: page.description, path, lang }), breadcrumbSchema([{ name: ui.breadcrumbHome, path: route('home', lang) }, { name: page.nav, path }])];
+if (page.tool) jsonLd.push(webApplicationSchema({ name: page.h1, description: page.description, path, lang }));
+if (faqs.length) jsonLd.push(faqSchema(faqs, lang));
+const HOME_CARD = 'Guaranty fee, maximum rate, monthly payment and total cost of an SBA 7(a) loan, on today’s prime.';
+const related = page.related.filter((id) => ROUTES.some((r) => r.id === id)).map((id) => ({ href: route(id, lang), name: label(id, lang), description: pageById(id)?.card ?? (id === 'home' ? HOME_CARD : '') }));
+const sources = page.sources.map((k) => ({ name: P.sources[k].label.en, url: P.sources[k].url }));
+const chunks: Array<{ html?: string; tool?: ToolDef }> = [];
+for (let i = 0; i < parts.length; i += 3) { chunks.push({ html: parts[i] }); if (parts[i + 1]) chunks.push({ tool: { kind: parts[i + 1], props: parts[i + 2] ? JSON.parse(parts[i + 2]) : undefined } }); }
+---
+<PageLayout title={page.title} description={page.description} lang={lang} jsonLd={jsonLd} faqs={faqs} related={related} sources={sources} breadcrumbs={[{ label: page.nav }]} dateEnHaut={false}>
+  <article>
+    <header class="mb-3">
+      <p class="kicker">{page.kicker ?? groupLabel(page.group)}</p>
+      <h1 class="mt-1 text-[1.75rem] font-bold text-navy-900 max-sm:leading-tight sm:text-3xl md:text-4xl">{page.h1}</h1>
+      <p class="mt-2 text-base text-navy-700 sm:text-lg">{page.intro}</p>
+      <p class="mt-1 text-xs text-navy-600">Independent site, not a lender and not affiliated with the U.S. Small Business Administration. Loans are applied for only with an SBA lender.</p>
+    </header>
+    {page.tool && <div data-outil class="mb-4"><Tool tool={page.tool} primary={true} /></div>}
+    <Clamp text={page.resume(h)} id={`clamp-${page.id}`} lang={lang} label="Show the whole paragraph here" class="mb-3" />
+    {page.mini && <div class="mb-4"><Tool tool={page.mini} idPrefix="g" /></div>}
+    <p class="mb-8 text-sm text-navy-600">{ui.reviewedBy} <a href={route('about', lang)} class="underline hover:text-navy-900">{AUTHOR_NAME}</a> · <a href={route('editorial', lang)} class="underline hover:text-navy-900">{ui.editorialPolicy}</a> · <a href={route('method', lang)} class="underline hover:text-navy-900">{label('method', lang)}</a></p>
+    <div class="prose prose-slate max-w-none">
+      {chunks.map((c, i) => c.html !== undefined ? <Fragment set:html={c.html} /> : <div class="not-prose"><Tool tool={c.tool!} idPrefix={`s${i}`} /></div>)}
+    </div>
+  </article>
+</PageLayout>

@@ -1,0 +1,132 @@
+---
+/**
+ * Home (pillar, RECETTE §5, §21): the 7(a) cost calculator on the first screen, the folded citable block,
+ * then the reference page: the four parts of the cost, what SBA's own loan file shows against the caps, the
+ * FY 2027 changes, three borrowers worked through, the programs side by side, what is left out, the guides
+ * and the sources. Every figure comes from the engine, the parameter file or the FOIA aggregates.
+ */
+import PageLayout from '../layouts/PageLayout.astro';
+import Tool from './Tool.astro';
+import Clamp from './Clamp.astro';
+import Sources from './Sources.astro';
+import { route } from '../i18n/routes';
+import { PAGES } from '../lib/guides';
+import { groupLabel, GROUPS_ORDER } from '../i18n/nav';
+import { helpers } from '../lib/helpers';
+import { shortBank } from '../lib/mini-specs';
+import { LAST_UPDATED, AUTHOR_NAME } from '../data/site-config';
+import { displayDate, formatNumber } from '../lib/format';
+import { faqSchema, webApplicationSchema, websiteSchema, organizationSchema } from '../lib/seo';
+const lang = 'en';
+const h = helpers(true);
+const { P, E, F, m, r, pc } = h;
+const N = F.national;
+const T = P.fees7a.tiers;
+const S = F.states;
+
+// Worked borrowers: amounts and terms chosen to sit in three different cap and fee steps.
+const a = E.cost7a({ amount: 40000, years: 7, rate: E.maxRate(40000, 'variable'), program: 'express' });
+const aMed = E.cost7a({ amount: 40000, years: 7, rate: E.round2(N.medSpreadVBand[0]! + P.prime.rate), program: 'express' });
+const b = E.cost7a({ amount: 350000, years: 10, rate: E.round2(N.medSpreadVBand[2]! + P.prime.rate) });
+const bW = E.cost7a({ amount: 350000, years: 10, rate: E.round2(N.medSpreadVBand[2]! + P.prime.rate), waiver: true });
+const c = E.cost7a({ amount: 1_200_000, years: 25, rate: E.round2(N.medSpreadVBand[3]! + P.prime.rate) });
+const c504 = E.cost504({ project: 1_333_000, debentureRate: P.prime.rate, bankRate: E.round2(N.medSpreadVBand[3]! + P.prime.rate) });
+
+// Counts of variable loans (the rates page uses the same cells), and both medians named apart (naive test of
+// 2026-11-08: “12,222 variable loans” here was the count of all loans, and “median margin” showed a full rate).
+const bandRows = E.BAND_LABELS.map((lab, i) => [lab, h.num(N.rates.V[i].n), `prime + ${formatNumber(E.maxSpread([50000, 250000, 350000, 1e6][i], 'variable'), 1)}`, `prime + ${formatNumber(N.medSpreadVBand[i]!, 2)}`, pc(N.atCapVBand[i]!), r(N.medVBand[i]!), r(E.maxRate([50000, 250000, 350000, 1e6][i], 'variable')), r(E.round2(P.prime.rate + N.medSpreadVBand[i]!))]);
+const progRows = [
+  [`<a href="${route('sba-7a-loan', lang)}">Standard 7(a)</a>`, m(P.sevenA.maxLoan), `${P.sevenA.guaranty.smallPct}% / ${P.sevenA.guaranty.largePct}%`, `${T[0].rate}% to ${T[2].rateOver1M}% of the guaranteed part`, 'prime + 3 to 6.5 (variable)', h.num(N.programs.plp + N.programs.general + N.programs.other)],
+  [`<a href="${route('sba-express-loan', lang)}">SBA Express</a>`, m(P.sevenA.expressMax), `${P.sevenA.guaranty.expressPct}%`, 'same schedule, on a 50% guaranty; $0 for veterans', 'same as 7(a)', h.num(N.programs.express)],
+  [`<a href="${route('sba-504-loan', lang)}">504</a>`, `${m(P.fees504.maxDebenture)} debenture`, 'debenture fully guaranteed', `${formatNumber(P.fees504.upfront, 2)}% + ${formatNumber(P.fees504.annual, 3)}% a year, plus CDC fees`, 'fixed, set at sale', h.num(N.f504!.n)],
+  [`<a href="${route('sba-microloan', lang)}">Microloan</a>`, m(P.micro.max), 'none: SBA lends to the intermediary', 'no SBA fee; intermediary fees vary', `intermediary rate + ${formatNumber(P.micro.spreadLarge, 2)} to ${formatNumber(P.micro.spreadSmall, 2)}`, 'not published'],
+];
+const topL = N.lenders.slice(0, 3);
+const capHi = [...N.lenders].filter((l) => l.atCapV !== null).sort((x, y) => y.atCapV! - x.atCapV!).slice(0, 2);
+const lowSmall = [...N.lenders].filter((l) => l.medVBand[0] !== null).sort((x, y) => x.medVBand[0]! - y.medVBand[0]!);
+const stLocal = Object.values(S).sort((x, y) => y.localLenderShare - x.localLenderShare);
+const stMed = Object.values(S).sort((x, y) => y.medAmt - x.medAmt);
+
+const resume = `An SBA 7(a) loan costs three things: a one-time guaranty fee, interest at a rate the lender chooses under an SBA ceiling, and the length of the term, which sets how long that interest runs. Under the ${P.fees7a.label} schedule, in force for loans approved from ${h.date(P.fy.from)} to ${h.date(P.fy.to)}, the fee is ${T[0].rate}% of the guaranteed part on loans of ${m(T[0].upTo)} or less, ${T[1].rate}% up to ${m(T[1].upTo)} and ${T[2].rate}% to ${T[2].rateOver1M}% above; manufacturers, food supply chain businesses and rural businesses pay nothing up to ${m(P.fees7a.waiver.upTo)}. With prime at ${r(P.prime.rate)} on ${h.date(P.prime.date)}, the variable ceiling runs from ${r(E.maxRate(1e6, 'variable'))} on large loans to ${r(E.maxRate(1, 'variable'))} on the smallest. Few borrowers pay the ceiling. In SBA’s own file of the ${h.num(N.n)} loans approved in ${h.fy}, the median variable rate was ${r(N.medV!)}, and ${pc(N.atCapV!)} of variable loans sat at the cap, most of them small loans. The calculator above starts from the median margin for your loan size, applied to today’s prime.`;
+
+const faqs = [
+  { q: 'How much does an SBA loan cost per month?', a: `It depends on the amount, the rate and the term. At today’s prime of ${r(P.prime.rate)}, ${m(350000)} over 10 years at the ${h.fy} median margin for that size, ${r(E.round2(N.medSpreadVBand[2]! + P.prime.rate))}, comes to ${m(b.monthly)} a month with the ${m(b.fee.fee)} guaranty fee added to the loan. The same loan over 25 years, if it finances real estate, pays less each month but more interest overall.` },
+  { q: 'Is the SBA rate the same at every bank?', a: `No. SBA sets only the maximum. In ${h.fy}, the median rate on variable loans of ${m(50000)} or less ranged from ${r(lowSmall[0].medVBand[0]!)} to ${r(lowSmall[lowSmall.length - 1].medVBand[0]!)} among the busiest lenders, for the same cap and the same prime. Two quotes for the same loan can differ by several points, which is why the lender table on this site exists.` },
+  { q: 'What credit score is needed for an SBA loan?', a: 'SBA sets no minimum personal credit score for 7(a) loans in its rules; the lender judges credit, cash flow and collateral under its own policy and SBA’s standards. SBA’s lending rules let a lender use a business credit scoring model, one that does not rest only on consumer scores, if it uses the same model for its own similar loans. A strong score mainly helps on price, since it gives a borrower room to ask for a margin below the cap.' },
+  { q: 'Does the calculator include closing costs?', a: `It includes SBA’s guaranty fee, financed in the loan, and every payment of interest. It leaves out what varies by lender and by deal: packaging or third-party report fees, appraisals, title and recording costs. Add them in the effective-rate comparison by asking each lender for a written list, which SBA requires them to itemize.` },
+  { q: 'How long does it take to get an SBA loan?', a: 'From application to funding it usually takes several weeks, longer when real estate or a business purchase is involved, because of appraisals, valuations and title work. Lenders with delegated authority, and SBA Express loans, skip SBA’s own credit review, which saves time. The rate is set off the prime of the first business day of the month, so the timing of approval can change the number slightly.' },
+  { q: 'Why did no SBA loans close in October 2025?', a: `The SBA loan file for ${h.fy} has no 7(a) approval dated October 2025, the month the federal government shutdown began on October 1, when SBA could not approve new guaranteed loans. Approvals resumed in November, with ${h.num(N.months['2025-11' as keyof typeof N.months])} loans that month.` },
+];
+const jsonLd = [webApplicationSchema({ name: 'SBA loan cost calculator', description: 'Guaranty fee, maximum rate, payment and total cost of an SBA 7(a) loan on today’s prime, with the rate set against the loans SBA approved last year.', path: route('home', lang), lang }), websiteSchema(lang), organizationSchema(lang), faqSchema(faqs, lang)];
+const groups = GROUPS_ORDER.map((g) => ({ g, pages: PAGES.filter((p) => p.group === g) })).filter((x) => x.pages.length);
+---
+<PageLayout title={`SBA Loan Calculator 2026: Fee, Rate Cap, Payment, Total Cost`} description={`SBA loan calculator: the ${P.fees7a.label} guaranty fee, the legal rate cap on today’s prime, your monthly payment and total cost, set against ${h.num(N.n)} real SBA loans.`} lang={lang} jsonLd={jsonLd} faqs={faqs.map((f, i) => ({ ...f, open: i < 2 }))}>
+  <header class="mb-3">
+    <h1 class="text-[1.75rem] font-bold text-navy-900 max-sm:leading-tight sm:text-3xl md:text-4xl">SBA loan calculator: what your loan costs, and what others really paid</h1>
+    <p class="mt-2 text-base text-navy-700 sm:text-lg">A 7(a) is SBA’s main business loan: your bank lends, SBA guarantees part of it and caps the rate. Type the amount and the rate you were quoted: you get the monthly payment, the guaranty fee (SBA’s one-time charge), the cap (the highest rate SBA allows), the total cost, and whether your rate is high or low next to last year’s SBA loans of the same size.</p>
+    <p class="mt-1 text-xs text-navy-600">Independent site, not a lender and not affiliated with the U.S. Small Business Administration. Loans are applied for only with an SBA lender.</p>
+  </header>
+  <div data-outil class="mb-4"><Tool tool={{ kind: 'mini:cost' }} primary={true} /></div>
+  <p class="mb-2 text-sm text-navy-700">Buying an existing business? A 7(a) loan can pay for it: {h.num(N.ages.buyout)} of last year’s {h.num(N.n)} SBA 7(a) loans did. Choose 10 years, unless real estate is most of the price, and ask the lender how much cash of your own it wants.</p>
+  <p class="mb-4 text-sm text-navy-700">Borrowing {m(P.sevenA.expressMax)} or less? Ask the lender about <a href={route('sba-express-loan', lang)} class="underline hover:text-navy-900">SBA Express</a>: the lender decides on its own, the rate cap is the same, and the SBA fee is charged on half the loan. Worked examples below: <a href="#examples" class="underline hover:text-navy-900">a landscaper borrowing {m(40000)}, a machine shop, a dental practice</a>.</p>
+  <Clamp text={resume} id="clamp-home" lang={lang} label="Show the whole paragraph here" class="mb-3" />
+  <p class="mb-8 text-sm text-navy-600">Fee notices and prime read on the official pages, loan file counted, last updated <time datetime={LAST_UPDATED}>{displayDate(LAST_UPDATED, 'en-US')}</time> · {AUTHOR_NAME} · <a href={route('method', lang)} class="underline hover:text-navy-900">Method and sources</a></p>
+
+  <div class="prose prose-slate max-w-none">
+    <h2>The four numbers behind an SBA loan</h2>
+    <p><strong>The guaranty fee.</strong> SBA charges it once, on the part of the loan it guarantees, and nearly every lender adds it to the balance. It is the only fee the program itself charges a 7(a) borrower. On a {m(100000)} loan it is {m(E.upfrontFee({ amount: 100000 }).fee)}; on {m(500000)}, {m(E.upfrontFee({ amount: 500000 }).fee)}; on {m(2_000_000)}, {m(E.upfrontFee({ amount: 2_000_000 }).fee)}. The <a href={route('sba-guaranty-fee', lang)}>guaranty fee page</a> shows the whole schedule and its two cliffs.</p>
+    <p><strong>The margin over prime.</strong> A variable SBA rate is the prime rate, the base rate banks lend from, plus a margin written into the loan contract for the life of the loan. SBA’s lending rules cap that margin by loan size: {formatNumber(E.maxSpread(1, 'variable'), 1)} points up to {m(50000)}, {formatNumber(E.maxSpread(100000, 'variable'), 1)} up to {m(250000)}, {formatNumber(E.maxSpread(300000, 'variable'), 1)} up to {m(350000)}, {formatNumber(E.maxSpread(1e6, 'variable'), 1)} above. Fixed rates have their own ceiling, set by SBA in 2022.</p>
+    <p><strong>The term.</strong> Ten years is the usual limit for equipment and working capital, twenty-five for real estate, with a blended maturity when a loan finances several things. The term matters as much as the rate: stretching {m(350000)} from 10 to 25 years cuts the payment by more than a third and roughly doubles the interest.</p>
+    <p><strong>The prime rate itself.</strong> Prime was {r(7.25)} until October 29, 2025, {r(7)} from October 30, {r(6.75)} from December 11 and {r(7)} again from September 17, 2026, according to the Federal Reserve’s daily series. Every variable SBA loan followed it, so the same margin produced a quarter point more or less depending on the month.</p>
+  </div>
+
+  <section class="not-prose my-10" aria-labelledby="data-title">
+    <h2 id="data-title" class="text-2xl font-bold text-navy-900">Why the actual loan data changes the answer</h2>
+    <p class="mt-2 text-navy-800">Lenders and comparison sites quote the cap, or a range that stops at it. SBA publishes something more useful: every loan it guaranteed, with its amount, rate, term and lender. Counted for {h.fy} (loans approved from {h.date(`${F.fy - 1}-10-01`)} to {h.date(`${F.fy}-09-30`)}), it shows how far real pricing sits from the ceiling, by size. The margin is the part of the rate above prime; the last column puts the median margin on today’s prime, which is the rate the calculator starts from.</p>
+    <Fragment set:html={h.table(['Loan size', `Variable-rate loans, ${h.fy}`, 'SBA cap', 'Median margin paid', 'Share at the cap', 'Median rate at approval', 'Cap today', 'Median rate if priced today'], bandRows, `SBA 7(a) loan file (FOIA) of ${h.date(F.asOf)}, variable-rate loans. Margin = rate at approval minus the prime of the first business day of the month (${r(6.75)} for most of the year). Today: prime ${r(P.prime.rate)} of ${h.date(P.prime.date)}.`, ['l', 'r', 'l', 'r', 'r', 'r', 'r', 'r'])} />
+  </section>
+
+  <div class="prose prose-slate max-w-none">
+    <p>Three things stand out. First, the gap between median and cap is widest on the smallest loans: {pc(N.atCapVBand[0]!)} of loans of {m(50000)} or less were priced at the maximum, against {pc(N.atCapVBand[1]!)} of those just above. A small borrower is the one most likely to be offered the ceiling and the one with most to gain from a second quote.</p>
+    <p>Second, the lender matters more than the program. {shortBank(capHi[0].name)} priced {pc(capHi[0].atCapV!)} of its variable loans at the cap and {shortBank(capHi[1].name)} {pc(capHi[1].atCapV!)}, while several of the largest SBA lenders almost never did. On loans of {m(50000)} or less, the median rate went from {r(lowSmall[0].medVBand[0]!)} at {shortBank(lowSmall[0].name)} to {r(lowSmall[lowSmall.length - 1].medVBand[0]!)} at {shortBank(lowSmall[lowSmall.length - 1].name)}. The <a href={route('sba-lenders', lang)}>lender page</a> has the 25 busiest.</p>
+    <p>Third, markets differ by state. {stLocal[0].name} borrowers got {pc(stLocal[0].localLenderShare)} of their loans from in-state lenders, {stLocal[stLocal.length - 1].name} borrowers {pc(stLocal[stLocal.length - 1].localLenderShare)}. The median loan ran from {m(stMed[0].medAmt)} in {stMed[0].name} to {m(stMed[stMed.length - 1].medAmt)} in {stMed[stMed.length - 1].name}, which moves both the cap and the fee. Each state has its own page under <a href={route('sba-loans-by-state', lang)}>SBA loans by state</a>.</p>
+    <p>The calculator uses this file twice: to prefill an example rate, the median for the amount you type, and to tell you where your own rate falls among the {h.num(N.n)} approvals. No borrower is named anywhere on this site; the counts are aggregates, and cells of fewer than {F.minCell} loans are not shown.</p>
+
+    <h2>What changed for fiscal year 2027</h2>
+    <p>The fee notice for loans approved from {h.date(P.fy.from)} kept the {T[0].rate}%, {T[1].rate}% and {T[2].rate}% to {T[2].rateOver1M}% steps of {P.fees7aPrev.label}, but changed who pays nothing. In {P.fees7aPrev.label}, manufacturers paid no fee on loans up to {m(P.fees7aPrev.waiver.upTo)}. From {h.date(P.fy.from)}, the relief stops at {m(P.fees7a.waiver.upTo)} and covers more businesses: {P.fees7a.waiver.who}. A manufacturer borrowing {m(900000)} now pays {m(E.upfrontFee({ amount: 900000, waiver: true }).fee)}; a rural restaurant borrowing {m(300000)} pays nothing where it paid {m(E.upfrontFee({ amount: 300000 }).fee)} a year earlier.</p>
+    <p>SBA also issued technical updates to its lending rulebook, effective {h.date(P.fy.from)}; the rate caps and maturities used here are unchanged by them. On the 504 side, the {P.fees504.label} notice sets SBA’s upfront fee at {formatNumber(P.fees504.upfront, 2)}% and its annual fee at {formatNumber(P.fees504.annual, 3)}%, waived for the same groups as the 7(a) relief, with no amount limit.</p>
+
+    <h2 id="examples">Three borrowers, worked through</h2>
+    <p><strong>A landscaper borrowing {m(40000)} through SBA Express over 7 years.</strong> The {P.sevenA.guaranty.expressPct}% guaranty puts the fee at {m(a.fee.fee)}. At the cap, {r(a.maxRate)}, the payment is {m(a.monthly)} and the interest {m(a.interest)}; at the {h.fy} median margin for that size, moved to today’s prime, {r(E.round2(N.medSpreadVBand[0]! + P.prime.rate))}, it is {m(aMed.monthly)} and {m(aMed.interest)}. The difference, {m(a.interest - aMed.interest)}, is the price of not asking a second lender.</p>
+    <p><strong>A machine shop borrowing {m(350000)} for equipment over 10 years.</strong> A machine shop is a manufacturer in SBA’s sense: its industry code starts with 33. At the median margin for loans of {E.BAND_LABELS[2]}, {r(E.round2(N.medSpreadVBand[2]! + P.prime.rate))} today, it pays no guaranty fee and {m(bW.monthly)} a month. The same loan to a business outside the relief groups pays a {m(b.fee.fee)} fee and {m(b.monthly)} a month: the relief saves {m(b.fee.fee)}, with the same rate.</p>
+    <p><strong>A dental practice buying its building for {m(1_200_000)} over 25 years.</strong> As a 7(a) loan at the median margin for large loans, {r(E.round2(N.medSpreadVBand[3]! + P.prime.rate))} today, the fee is {m(c.fee.fee)} and the payment {m(c.monthly)}. Structured as a 504 project of about {m(1_333_000)} with 10% down, the debenture alone carries {m(c504.gross - c504.net)} of fees, while its fixed rate removes the risk of prime rising. The <a href={route('sba-504-loan', lang)}>504 page</a> lays out the three parts.</p>
+  </div>
+
+  <section class="not-prose my-10" aria-labelledby="prog-title">
+    <h2 id="prog-title" class="text-2xl font-bold text-navy-900">The four SBA loan programs side by side</h2>
+    <Fragment set:html={h.table(['Program', 'Maximum', 'SBA guaranty', 'SBA fee', 'Rate', `Approvals, ${h.fy}`], progRows, `Fee notices ${P.fees7a.notice} and ${P.fees504.notice}; SOP 50 10 8.1; 13 CFR 120.707. Standard 7(a) counts every 7(a) loan other than Express (including ${h.num(N.programs.other)} under other processing methods), so the two add up to the ${h.num(N.n)} approvals. Microloan counts are not in SBA’s public loan file.`, ['l', 'r', 'l', 'l', 'l', 'r'])} />
+  </section>
+
+  <div class="prose prose-slate max-w-none">
+    <h2>What the calculator leaves out</h2>
+    <p>It counts SBA’s guaranty fee and every interest payment at the rate you type, held constant. It does not forecast prime: if prime rises a point, a variable payment rises with it. It leaves out lender fees that SBA allows within limits, such as packaging fees, and third-party costs such as appraisals, environmental reports, title insurance and recording, because they vary by deal; ask each lender to itemize them. It assumes the fee is financed, as most lenders do, and that the loan runs to term; if you may repay early, the <a href={route('sba-prepayment-penalty', lang)}>prepayment page</a> covers SBA’s 5-3-1 fee on long loans.</p>
+    <p>Nor does it tell you whether you qualify. Eligibility, collateral and the rate are decided by the lender under SBA’s rules. This site does not take applications, does not share what you type, and does not pass you to any lender: everything is worked out in your browser.</p>
+    <p>Comparing an SBA quote with a bank loan without a guarantee? The <a href={route('sba-vs-conventional-loan', lang)}>comparison calculator</a> puts both on the same effective rate. Checking a single quote? The <a href={route('sba-loan-rates', lang)}>SBA loan rates checker</a> places it among the {h.num(N.n)} approvals of {h.fy}, by size.</p>
+  </div>
+
+  <section class="mt-12 mb-10" aria-labelledby="guides-title">
+    <h2 id="guides-title" class="text-2xl font-bold text-navy-900">Guides and calculators</h2>
+    <div class="mt-4 grid gap-6 md:grid-cols-3">
+      {groups.map(({ g, pages }) => (
+        <div class="border-t-4 border-accent-600 pt-3">
+          <h3 class="text-lg font-semibold text-navy-900">{groupLabel(g)}</h3>
+          <ul class="mt-2 space-y-2">{pages.map((p) => <li><a href={route(p.id, lang)} class="font-medium text-accent-700 underline-offset-2 hover:underline">{p.nav}</a><span class="block text-sm text-navy-600">{p.card}</span></li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <div class="prose prose-slate max-w-none">
+    <Sources lang={lang} intro="Each fee, rate cap and loan count on this page comes from the SBA notices, federal rules and SBA loan files listed below, read on" />
+  </div>
+</PageLayout>

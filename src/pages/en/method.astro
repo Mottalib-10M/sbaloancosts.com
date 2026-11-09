@@ -1,0 +1,32 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { route } from '../../i18n/routes';
+import { breadcrumbSchema, articleSchema } from '../../lib/seo';
+import { displayDate, formatNumber } from '../../lib/format';
+import { P, type SourceKey } from '../../lib/engine/params';
+import { helpers } from '../../lib/helpers';
+const lang = 'en';
+const h = helpers(true);
+const { E, F, m, r, pc } = h;
+const N = F.national;
+const L = (k: SourceKey, t?: string) => `<a href="${P.sources[k].url}" target="_blank" rel="nofollow noopener">${t ?? P.sources[k].label.en}</a>`;
+const months = Object.entries(N.primeByMonth).map(([k, v]) => `${h.ml(k)}: ${r(v as number)}`).join('; ');
+const ex = E.cost504({ project: 875_000, debentureRate: 6, bankRate: 8, closing: 2_500 });
+---
+<PageLayout title="SBA Loan Costs Method: Fees, Rate Caps, Loan Data, Limits" description="How SBA Loan Costs computes the SBA guaranty fee, rate caps and payments, how it counts SBA’s 7(a) and 504 loan files, and what the figures leave out." lang={lang} jsonLd={[articleSchema({ title: 'How the figures are built', description: 'Method of SBA Loan Costs', path: route('method', lang), lang }), breadcrumbSchema([{ name: 'Home', path: route('home', lang) }, { name: 'Method', path: route('method', lang) }])]} breadcrumbs={[{ label: 'Method' }]}>
+  <header class="mb-6"><p class="kicker">Method</p><h1 class="mt-1 text-3xl font-bold text-navy-900 md:text-4xl">How the figures are built</h1></header>
+  <div class="prose prose-slate max-w-none">
+    <p>Every calculator calls one engine of pure functions, fed by one parameter file of fees, rules and rates. No amount is typed into a page. Each rule was read by hand in the official text named in the file, on {displayDate(P.retrieved_at, 'en-US')}. Updates are made by hand when SBA publishes a new notice or loan file, or when prime changes; nothing is fetched automatically and no schedule is promised.</p>
+    <h2>Guaranty fee</h2>
+    <p>The guaranteed portion is {P.sevenA.guaranty.smallPct}% of loans up to {m(P.sevenA.guaranty.smallUpTo)}, {P.sevenA.guaranty.largePct}% above, {P.sevenA.guaranty.expressPct}% for SBA Express, capped at {m(P.sevenA.maxGuarantyAmount)}. The {P.fees7a.label} rate is applied to it by loan size, with {P.fees7a.tiers[2].rateOver1M}% on the part of the guaranteed amount above {m(1_000_000)}; {formatNumber(P.fees7a.shortTermRate, 2)}% for terms of 12 months or less; zero for the relief groups up to {m(P.fees7a.waiver.upTo)} and for veteran-owned Express loans. Checked against the two examples of the SOP fee chart: {m(E.upfrontFee({ amount: 100000 }).fee)} on {m(100000)} and {m(E.upfrontFee({ amount: 5_000_000 }).fee)} on {m(5_000_000)}. <Fragment set:html={L('fees7a')} />.</p>
+    <h2>Rate caps and payments</h2>
+    <p>Variable cap = prime of the first business day of the month plus {P.sevenA.variableSpreads.map((s) => formatNumber(s.spread, 1)).join(', ')} points by size step; fixed cap = prime plus {P.sevenA.fixedSpreads.map((s) => formatNumber(s.spread, 0)).join(', ')} points (<Fragment set:html={L('fixedRates', '87 FR 46883')} />). Prime: {r(P.prime.rate)} on {h.date(P.prime.date)}, <Fragment set:html={L('prime', 'H.15')} />. Payments are level monthly installments at the rate typed, held for the whole term, with the guaranty fee added to the principal. The effective rate is the rate that equates the amount received with the payments, so fees paid or financed are counted.</p>
+    <h2>504 and microloans</h2>
+    <p>The 504 debenture is {P.fees504.structure.cdc}% of the project ({P.fees504.structure.borrowerNew}% or {P.fees504.structure.borrowerNewSpecial}% contribution cases lower it), plus SBA, funding and processing fees, closing costs and the underwriters’ fee, grossed up and rounded to the next thousand as in the SOP example: net {m(ex.net)} gives a gross debenture of {m(ex.gross)}. Microloan ceilings follow 13 CFR 120.707 and 120.706, from the 5-year Treasury of {h.date(P.treasury5y.date)}, {r(P.treasury5y.rate)}.</p>
+    <h2>The loan file</h2>
+    <p>{L('foia', 'SBA’s 7(a) and 504 FOIA file')} as of {h.date(F.asOf)} lists every loan SBA has guaranteed, a U.S. Government Work with no copyright. We keep the {h.num(N.n)} 7(a) and {h.num(N.f504!.n)} 504 loans approved in {h.fy} (October 1, 2025 to September 30, 2026), cancelled ones included ({h.num(N.cancelled)}), since the rate was set at approval. Each loan is counted in the state of its project. A loan’s margin is its initial rate less the prime of the first business day of its approval month ({months}; source: <Fragment set:html={L('primeHistory', 'DPRIME')} />). A loan is “at the cap” when its margin is within half a hundredth of a point of SBA’s maximum for its amount. Medians and shares are shown only for cells of {F.minCell} loans or more. A lender’s home state is the state of its address in the file. The counting script is kept with the site and can be run again on each quarterly file.</p>
+    <h2>Limits</h2>
+    <p>The file has no rate for 504 debentures and does not cover microloans, so those pages show the rules, not what borrowers paid. It records approvals, not applications, and the rate at approval, not later changes. Lender fees within SBA’s limits and third-party closing costs are not included anywhere. No borrower is named; only counts and medians are published.</p>
+    <p>See the <a href={route('editorial', lang)}>editorial policy</a> for corrections and the <a href={route('home', lang)}>calculator</a> to apply all this to a loan.</p>
+  </div>
+</PageLayout>

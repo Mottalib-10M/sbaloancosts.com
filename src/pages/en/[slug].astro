@@ -1,0 +1,11 @@
+---
+/** Every page of `src/content/pages/` sits at /en/<slug>/. */
+import ContentPage from '../../components/ContentPage.astro';
+import { PAGES } from '../../lib/guides';
+import type { PageDef } from '../../lib/guide-types';
+export function getStaticPaths() {
+  return PAGES.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+const { page } = Astro.props as { page: PageDef };
+---
+<ContentPage page={page} />

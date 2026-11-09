@@ -1,0 +1,31 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import { LAST_UPDATED, AUTHOR_NAME, CONTACT_EMAIL, AUTHOR_ROLE } from '../../data/site-config';
+import { route } from '../../i18n/routes';
+import { personSchema, organizationSchema, breadcrumbSchema, profilePageSchema } from '../../lib/seo';
+import { displayDate } from '../../lib/format';
+import { PAGES } from '../../lib/guides';
+import { helpers } from '../../lib/helpers';
+const lang = 'en';
+const h = helpers(true);
+const n = PAGES.length + 3;
+const nSrc = Object.keys(h.P.sources).length;
+---
+<PageLayout title="SBA Loan Costs: who counts the fees, the caps and the loans" description="Who publishes SBA Loan Costs, why it sets SBA’s fee and rate rules against the agency’s own loan data, and what it does not do: no lending, no referrals." lang={lang} jsonLd={[personSchema(lang), organizationSchema(lang), profilePageSchema({ path: route('about', lang), lang }), breadcrumbSchema([{ name: 'Home', path: route('home', lang) }, { name: 'About', path: route('about', lang) }])]} breadcrumbs={[{ label: 'About' }]}>
+  <header class="mb-6"><p class="kicker">About</p><h1 class="mt-1 text-3xl font-bold text-navy-900 md:text-4xl">Who is behind SBA Loan Costs</h1></header>
+  <div class="prose prose-slate max-w-none">
+    <div class="not-prose mb-6"><p class="text-lg font-semibold text-navy-900">{AUTHOR_NAME}</p><p class="text-navy-700">{AUTHOR_ROLE[lang]}</p></div>
+    <p>SBA Loan Costs is published by Radif Partners, a company that builds free calculators on official data. It is for owners holding an SBA loan quote and wondering whether it is fair: a contractor offered an Express line, a restaurant owner pricing a 7(a) loan for a second site, a buyer financing the purchase of a practice, a manufacturer deciding between a 7(a) loan and a 504 project.</p>
+    <h2>Why this site exists</h2>
+    <p>Most pages on SBA loan rates are written by lenders or by marketplaces paid per lead. They quote SBA’s maximum, or a range ending at it, and then ask for a phone number. Some still show an old prime or an old fee. Yet SBA itself publishes every loan it guarantees, with its rate. We wanted one place that does the arithmetic from SBA’s own texts and sets a quote against what borrowers really paid.</p>
+    <h2>Where the figures come from</h2>
+    <p>Fees from SBA’s fiscal-year notices; rate caps and maturities from SOP 50 10 8.1 and the Federal Register; microloan and prepayment rules from 13 CFR part 120; prime and Treasury rates from the Federal Reserve; loan counts and rates from SBA’s 7(a) and 504 FOIA file as of {h.date(h.F.asOf)}. The parameter file cites {nSrc} pages, all read on {displayDate(h.P.retrieved_at, 'en-US')}. The <a href={route('method', lang)}>method page</a> explains each formula and each count.</p>
+    <h2>What we are not</h2>
+    <p>We are not a lender, a broker or a loan marketplace, and we are not affiliated with the U.S. Small Business Administration, which has not reviewed this site. We do not take applications, refer readers to lenders or recommend any lender; lenders are named only as facts from SBA’s data. Nothing here is financial or legal advice, and only a lender can say whether you qualify.</p>
+    <h2>How the site is paid for</h2>
+    <p>It is free and asks for no account, email or phone number. We take no referral fee and carry no affiliate link. If advertising is added one day it will never sit above a calculator, and it cannot use what you type, because nothing you type leaves your browser.</p>
+    <h2>Tell us when a figure is wrong</h2>
+    <p>Write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the page, the values you entered and the official text you rely on. The <a href={route('editorial', lang)}>editorial policy</a> explains how a correction is made. The site has {n} indexed pages, listed in the footer and on the state table.</p>
+    <p class="text-sm text-navy-600">Figures last read on <time datetime={LAST_UPDATED}>{displayDate(LAST_UPDATED, 'en-US')}</time>.</p>
+  </div>
+</PageLayout>

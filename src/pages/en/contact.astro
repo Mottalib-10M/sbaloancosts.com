@@ -1,0 +1,22 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import LegalIdentity from '../../components/LegalIdentity.astro';
+import { CONTACT_EMAIL, LAST_UPDATED, SITE_NAMES } from '../../data/site-config';
+import { route } from '../../i18n/routes';
+const lang = 'en';
+---
+<PageLayout title={`Contact ${SITE_NAMES[lang]}: a fee, a rate, a loan count`} description="Write to SBA Loan Costs when a fee, a rate cap or a loan count looks wrong, when SBA publishes a new notice or loan file, or to embed the SBA loan cost calculator." lang={lang} noindex={true} breadcrumbs={[{ label: 'Contact' }]} showAuthor={false}>
+  <div class="prose prose-slate max-w-none">
+    <h1>Contact</h1>
+    <p>Email: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. A person reads every message.</p>
+    <h2>A figure looks wrong</h2>
+    <p>Send the page address, what you typed and the figure you expected, with the official text you rely on: an SBA information notice, SOP 50 10 8.1, the Federal Register or the eCFR. For a count from the loan file, name the state, the lender or the size band. We reread the source, correct the parameter file, the engine or the counting script, add a test and date the change.</p>
+    <h2>What we cannot do</h2>
+    <p>We are not a lender or a broker. We cannot take a loan application, tell you whether you qualify, introduce you to a lender or look up a particular loan. Please do not send tax returns, account numbers or loan documents.</p>
+    <h2>Embedding the calculator</h2>
+    <p>Small business development centers, chambers of commerce and writers can show the cost calculator in an iframe at no cost. The code and the conditions are on the <a href={route('widget', lang)}>embed page</a>.</p>
+    <h2>Publisher</h2>
+    <LegalIdentity lang={lang} />
+    <p class="text-sm">Last updated: {LAST_UPDATED}.</p>
+  </div>
+</PageLayout>

@@ -1,0 +1,17 @@
+---
+/** Renders one tool with its page defaults: a mini-spec (`mini:<spec>`) of `lib/mini-specs.ts`. */
+import MiniSim from './calc/MiniSim';
+import { route } from '../i18n/routes';
+import { getSpec } from '../lib/mini-specs';
+import type { ToolDef } from '../lib/guide-types';
+interface Props { tool: ToolDef; primary?: boolean; idPrefix?: string }
+const { tool, primary = false, idPrefix } = Astro.props;
+const props = (tool.props ?? {}) as Record<string, any>;
+const mini = tool.kind.startsWith('mini:') ? tool.kind.slice(5) : null;
+if (!mini) throw new Error(`Unknown tool kind: ${tool.kind}`);
+const spec = getSpec(mini);
+const href = spec.ctaPage ? route(spec.ctaPage, 'en') : undefined;
+const numDefaults: Record<string, number> = {};
+for (const [k, v] of Object.entries(props)) if (typeof v === 'number') numDefaults[k] = v;
+---
+<MiniSim client:load kind={mini} href={href} defaults={numDefaults} primary={primary} idPrefix={idPrefix ?? (primary ? 'p' : 'm')} title={typeof props.title === 'string' ? props.title : undefined} />

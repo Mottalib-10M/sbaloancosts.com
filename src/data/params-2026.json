@@ -1,0 +1,295 @@
+{
+  "_lisezmoi": "Every rule, fee and rate the engine applies, read on the official page cited in `sources` on retrieved_at. Never hard-code a figure in a page (RECETTE §4). New fiscal year (October 1): reread the two SBA fee notices and the prime rate, update fy, fees7a, fees504 and prime, keep the old schedule in fees7aPrev.",
+  "year": 2026,
+  "retrieved_at": "2026-11-08",
+  "valid_from": "2026-10-01",
+  "valid_to": "2027-09-30",
+  "fy": {
+    "label": "FY 2027",
+    "from": "2026-10-01",
+    "to": "2027-09-30",
+    "prevLabel": "FY 2026"
+  },
+  "prime": {
+    "rate": 7.0,
+    "date": "2026-11-02",
+    "readOn": "2026-11-08",
+    "_note": "Federal Reserve H.15 release of 2026-11-06, bank prime loan, daily values 2026-10-30 to 2026-11-05 all 7.00. SOP 50 10 8.1: the prime in effect on the first business day of the month (2026-11-02)."
+  },
+  "sevenA": {
+    "maxLoan": 5000000,
+    "maxGuarantyAmount": 3750000,
+    "guaranty": {
+      "smallUpTo": 150000,
+      "smallPct": 85,
+      "largePct": 75,
+      "expressPct": 50
+    },
+    "expressMax": 500000,
+    "smallMax": 350000,
+    "variableSpreads": [
+      {
+        "upTo": 50000,
+        "spread": 6.5
+      },
+      {
+        "upTo": 250000,
+        "spread": 6.0
+      },
+      {
+        "upTo": 350000,
+        "spread": 4.5
+      },
+      {
+        "upTo": null,
+        "spread": 3.0
+      }
+    ],
+    "fixedSpreads": [
+      {
+        "upTo": 25000,
+        "spread": 8.0
+      },
+      {
+        "upTo": 50000,
+        "spread": 7.0
+      },
+      {
+        "upTo": 250000,
+        "spread": 6.0
+      },
+      {
+        "upTo": null,
+        "spread": 5.0
+      }
+    ],
+    "maturity": {
+      "workingCapital": 10,
+      "equipment": 10,
+      "equipmentMax": 15,
+      "realEstate": 25
+    },
+    "startupEquity": 10,
+    "recoupment": {
+      "minTermYears": 15,
+      "thresholdPct": 25,
+      "byYear": [
+        5,
+        3,
+        1
+      ]
+    },
+    "extraordinaryServicingMax": 2
+  },
+  "fees7a": {
+    "label": "FY 2027",
+    "notice": "5000-881797",
+    "published": "2026-09-03",
+    "annualServiceFee": 0.55,
+    "lenderRetainSmall": 25,
+    "tiers": [
+      {
+        "upTo": 150000,
+        "rate": 2.0
+      },
+      {
+        "upTo": 700000,
+        "rate": 3.0
+      },
+      {
+        "upTo": 5000000,
+        "rate": 3.5,
+        "rateOver1M": 3.75
+      }
+    ],
+    "shortTermRate": 0.25,
+    "waiver": {
+      "upTo": 700000,
+      "rate": 0,
+      "who": "manufacturers (NAICS 31-33), the listed food supply chain codes and businesses located in a rural area"
+    },
+    "expressVeteran": 0
+  },
+  "fees7aPrev": {
+    "label": "FY 2026",
+    "notice": "5000-872051",
+    "tiers": [
+      {
+        "upTo": 150000,
+        "rate": 2.0
+      },
+      {
+        "upTo": 700000,
+        "rate": 3.0
+      },
+      {
+        "upTo": 5000000,
+        "rate": 3.5,
+        "rateOver1M": 3.75
+      }
+    ],
+    "waiver": {
+      "upTo": 950000,
+      "rate": 0,
+      "who": "manufacturers (NAICS 31-33)"
+    }
+  },
+  "fees504": {
+    "label": "FY 2027",
+    "notice": "5000-881796",
+    "published": "2026-09-03",
+    "upfront": 0.5,
+    "annual": 0.203,
+    "annualRefiNoExpansion": 0.204,
+    "waived": "manufacturers (NAICS 31-33), the listed food supply chain codes and businesses located in a rural area",
+    "funding": 0.25,
+    "processingMax": 1.5,
+    "closingFinancedMax": 10000,
+    "underwriter20_25": 0.4,
+    "underwriter10": 0.375,
+    "cdcServicingMin": 0.625,
+    "cdcServicingDefaultMax": 1.0,
+    "cdcServicingRuralMax": 1.5,
+    "thirdPartyParticipation": 0.5,
+    "structure": {
+      "bank": 50,
+      "cdc": 40,
+      "borrower": 10,
+      "borrowerNew": 15,
+      "borrowerSpecial": 15,
+      "borrowerNewSpecial": 20
+    },
+    "terms": [
+      10,
+      20,
+      25
+    ],
+    "maxDebenture": 5000000,
+    "maxDebentureManufacturing": 5500000
+  },
+  "micro": {
+    "max": 50000,
+    "softCap": 10000,
+    "creditElsewhereAbove": 20000,
+    "maxYears": 7,
+    "spreadSmall": 8.5,
+    "spreadLarge": 7.75,
+    "smallUpTo": 10000,
+    "intermediaryLessTreasury": 1.25,
+    "specializedLessTreasury": 2.0,
+    "intermediaryRoundTo": 0.125
+  },
+  "sources": {
+    "fees7a": {
+      "url": "https://www.sba.gov/document/information-notice-5000-881797-fy-2027-7a-program-fees",
+      "label": {
+        "en": "SBA Information Notice 5000-881797: 7(a) Fees Effective October 1, 2026 for Fiscal Year 2027 (published September 3, 2026)"
+      }
+    },
+    "fees504": {
+      "url": "https://www.sba.gov/document/information-notice-5000-881796-fy-2027-504-program-fees",
+      "label": {
+        "en": "SBA Information Notice 5000-881796: 504 Fees for Fiscal Year 2027 (published September 3, 2026)"
+      }
+    },
+    "fees7aPrev": {
+      "url": "https://www.sba.gov/document/information-notice-5000-872051-7a-fees-effective-october-1-2025-fiscal-year-2026",
+      "label": {
+        "en": "SBA Information Notice 5000-872051: 7(a) Fees Effective October 1, 2025 for Fiscal Year 2026"
+      }
+    },
+    "sop": {
+      "url": "https://www.sba.gov/document/sop-50-10-lender-development-company-loan-programs",
+      "label": {
+        "en": "SBA SOP 50 10 8.1, Lender and Development Company Loan Programs (Technical Policy Updates, effective October 1, 2026)"
+      }
+    },
+    "sopNotice": {
+      "url": "https://www.sba.gov/document/information-notice-5000-882227-issuance-technical-updates-sop-50-10-81",
+      "label": {
+        "en": "SBA Information Notice 5000-882227: Issuance of Technical Updates to SOP 50 10 8.1"
+      }
+    },
+    "fixedRates": {
+      "url": "https://www.federalregister.gov/documents/2022/08/01/2022-16162/maximum-allowable-7a-fixed-interest-rates",
+      "label": {
+        "en": "Federal Register, 87 FR 46883 (August 1, 2022): Maximum Allowable 7(a) Fixed Interest Rates"
+      }
+    },
+    "cfr": {
+      "url": "https://www.ecfr.gov/current/title-13/chapter-I/part-120",
+      "label": {
+        "en": "13 CFR Part 120, Business Loans (eCFR): §§ 120.151, 120.210, 120.213, 120.220"
+      }
+    },
+    "micro": {
+      "url": "https://www.ecfr.gov/current/title-13/chapter-I/part-120/subpart-G/section-120.707",
+      "label": {
+        "en": "13 CFR 120.707: conditions on Microloans by Intermediaries (amount, maturity, interest rate)"
+      }
+    },
+    "prime": {
+      "url": "https://www.federalreserve.gov/releases/h15/",
+      "label": {
+        "en": "Federal Reserve Statistical Release H.15, Selected Interest Rates: bank prime loan"
+      }
+    },
+    "foia": {
+      "url": "https://data.sba.gov/dataset/7a-504-foia",
+      "label": {
+        "en": "U.S. Small Business Administration, 7(a) & 504 FOIA data, files as of September 30, 2026 (U.S. Government Works)"
+      }
+    },
+    "page7a": {
+      "url": "https://www.sba.gov/funding-programs/loans/7a-loans",
+      "label": {
+        "en": "SBA: 7(a) loans, program page"
+      }
+    },
+    "page504": {
+      "url": "https://www.sba.gov/funding-programs/loans/504-loans",
+      "label": {
+        "en": "SBA: 504 loans, program page"
+      }
+    },
+    "pageMicro": {
+      "url": "https://www.sba.gov/funding-programs/loans/microloans",
+      "label": {
+        "en": "SBA: Microloans, program page"
+      }
+    },
+    "primeHistory": {
+      "url": "https://fred.stlouisfed.org/series/DPRIME",
+      "label": {
+        "en": "Bank Prime Loan Rate (DPRIME), daily, Board of Governors of the Federal Reserve System via FRED, Federal Reserve Bank of St. Louis"
+      }
+    }
+  },
+  "treasury5y": {
+    "rate": 4.7,
+    "date": "2026-11-02",
+    "readOn": "2026-11-08",
+    "_note": "Federal Reserve H.15 release of 2026-11-06, Treasury constant maturities, nominal, 5-year, value for 2026-11-02."
+  },
+  "primeHistory": {
+    "_note": "Daily bank prime loan (DPRIME, Federal Reserve H.15, read through FRED on 2026-11-08): changes only.",
+    "changes": [
+      [
+        "2025-09-17",
+        7.25
+      ],
+      [
+        "2025-10-30",
+        7.0
+      ],
+      [
+        "2025-12-11",
+        6.75
+      ],
+      [
+        "2026-09-17",
+        7.0
+      ]
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+ "name": "SBA Loan Costs",
+ "short_name": "SBA Loan Costs",
+ "description": "SBA loan cost in 2026-27: FY 2027 guaranty fee, maximum rate on today's prime, monthly payment, total cost, and the rates lenders actually charged by state.",
+ "start_url": "/en/",
+ "display": "standalone",
+ "background_color": "#ffffff",
+ "theme_color": "#1F4E79",
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}
