@@ -122,5 +122,6 @@ p[id$="-help"]:not([role="status"]), [data-fixe], [data-actuellement], [aria-liv
 @media (max-width: 479px) {
   [aria-live] table tr:has(> td + td) { display: flex; flex-wrap: wrap; justify-content: space-between; }
   [aria-live] table tr > td:first-child:not(:only-child) { flex: 1 1 100%; padding-bottom: 0; padding-right: 0; hyphens: manual; overflow-wrap: normal; }
-  [aria-live] table tr > td + td { flex: 1 1 100%; padding-top: .1rem; text-align: right; font-weight: 600; }
+  [aria-live] table tr:has(> td + td) { border-top: 1px solid var(--color-navy-200); padding: .3rem 0; }
+  [aria-live] table tr > td + td { flex: 1 1 100%; padding-top: .1rem; text-align: left; font-weight: 600; }
 }
