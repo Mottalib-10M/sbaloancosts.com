@@ -109,3 +109,18 @@ details.pli > .pli-corps > :first-child { margin-top: .25rem; }
 /* Pied de page (brief du 2026-11-09) : un seul titre à ouvrir sur téléphone, ouvert et sans titre sur ordinateur. */
 @media (min-width: 768px) { details.pied > summary { display: none; } details.pied, details.pied:last-of-type { border: 0; } }
 .pli-aide { margin: 0 0 .5rem; font-size: .875rem; color: var(--color-navy-600); }
+
+
+/* Lisibilité des aides et des résultats (testeurs naïfs du 2026-11-10, 11 sites sur 11) : le texte
+   d'aide en text-xs gris clair (navy-500) n'était pas lu par le testeur de 61 ans, et les tableaux de
+   résultat coupaient les libellés sur 3 ou 4 lignes au téléphone. Aides de champ, hypothèses et note
+   de résultat passent à 15 px en navy-700 ; sous 480 px, chaque ligne de résultat met le libellé sur
+   toute la largeur et la valeur dessous, en gras. Les alertes de saisie (role="status") gardent leur style. */
+p[id$="-help"]:not([role="status"]), [data-fixe], [data-actuellement], [aria-live] > p.text-xs:not([data-exemple]) {
+  font-size: .9375rem; line-height: 1.45; color: var(--color-navy-700);
+}
+@media (max-width: 479px) {
+  [aria-live] table tr:has(> td + td) { display: flex; flex-wrap: wrap; justify-content: space-between; }
+  [aria-live] table tr > td:first-child:not(:only-child) { flex: 1 1 100%; padding-bottom: 0; padding-right: 0; hyphens: manual; overflow-wrap: normal; }
+  [aria-live] table tr > td + td { flex: 1 1 100%; padding-top: .1rem; text-align: right; font-weight: 600; }
+}

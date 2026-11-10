@@ -16,27 +16,31 @@ const rateIn = (id: string, label: string, def: number, help?: string) => ({ id,
 const dd = (iso: string) => displayDate(iso, 'en-US');
 const PRIME = `prime rate ${r2(P.prime.rate)} on ${dd(P.prime.date)}`;
 const TYPES = opt(['Variable (follows the prime rate)', 'Fixed for the whole term']);
-const TYPE_HELP = `The prime rate is the base rate banks lend from: ${r2(P.prime.rate)} today. A variable SBA rate is prime plus a margin that stays the same for the life of the loan.`;
+// Brief of 2026-11-10, rule 5: every hard field has a simple rule and a way out for “I don’t know”.
+const VAR_IN_10 = Math.round((1 - E.F.national.fixedShare) * 10);
+const TYPE_HELP = `Not sure? Keep variable: ${VAR_IN_10} SBA loans in 10 are. Variable means the prime rate (the base rate banks lend from, ${r2(P.prime.rate)} today) plus a margin, an add-on that never changes.`;
 const type = (v: number): E.RateType => (Math.round(v) === 1 ? 'fixed' : 'variable');
 const YEARS = [5, 7, 10, 15, 20, 25];
 // Short labels: the longer one was cut in the select on a phone (naive test of 2026-11-08).
 // “10 years (buying a business)” made a landscaper and a machine shop think the tool was not for them (2026-11-08).
 const TERM = YEARS.map((y) => ({ value: String(y), label: `${y} years${y === 10 ? ' (most loans)' : y === 25 ? ' (real estate)' : ''}` }));
-const TERM_HELP = 'Equipment, vehicles, working capital or buying a business: up to 10 years. Real estate: up to 25 years.';
+const TERM_HELP = 'Not sure? Keep 10 years: equipment, vehicles, working capital or buying a business. Real estate can run 25 years.';
 // One question per group, so each reader can answer for their own business (editor, 2026-11-08: relief testable simply).
 // “A farm or food business” made a café owner pick it (naive test of 2026-11-08): restaurants are not on the list.
 const RELIEF = opt(['None of these', 'A manufacturer (machine shop, food processor…)', 'A farm or food supplier (not a restaurant)', 'Located in a rural area']);
 // Same list in the label, the help and the result note (final naive test of 2026-11-09: “these three”, then four named).
 const RELIEF_LABEL = 'Manufacturer, farm, food supplier or rural business? You may pay no SBA fee';
-const RELIEF_HELP = `$0 fee up to ${m(P.fees7a.waiver.upTo)} for these. Restaurants and cafés count only in a rural area. Your lender checks your industry code and address.`;
+const RELIEF_HELP = `$0 fee up to ${m(P.fees7a.waiver.upTo)} for these. Restaurants and cafés count only in a rural area. Not sure? Keep “None of these”: your lender checks your trade and address before you sign.`;
 /** The common example: the median 7(a) loan of the SBA file, the same on every page (naive test of 2026-11-08:
  *  $100,000, $150,000, $300,000, $350,000 and $500,000 on five pages made the same results look inconsistent). */
 export const EXAMPLE_AMOUNT = Math.round(E.F.national.medAmt / 10000) * 10000;
-const EXAMPLE_HELP = `Example: ${m(EXAMPLE_AMOUNT)}, the median SBA 7(a) loan approved ${DATA_YEAR}. Type yours.`;
-const RATE_HELP = `Example until you type your quote: the typical rate for this amount, today’s prime ${r2(P.prime.rate)} plus the median margin paid on similar SBA loans.`;
+const EXAMPLE_HELP = `Example: ${m(EXAMPLE_AMOUNT)}, the middle-sized SBA 7(a) loan of ${DATA_YEAR} (half were smaller, half larger). Type yours.`;
+const RATE_HELP = `No quote yet? Keep this example: today’s prime, ${r2(P.prime.rate)}, plus the margin (the add-on above prime) a typical borrower of this size paid.`;
 const relief = (x: number) => Math.round(x) >= 1;
 /** What the prefilled example assumes, in plain words (brief of 2026-11-09). */
-const assumed = (what: string) => `${what}. No quote yet? Keep these figures. Change any figure to see yours.`;
+const assumed = (_what?: string) => 'No quote yet? Keep these figures. Change any figure to see yours.';
+/** The line under the large figure (rule 1 of 2026-11-10): what it assumes, over what period. */
+const sup = (s: string) => s;
 /** While nothing is typed the figures are an example (editor, 2026-11-08): MiniSim now shows the trame's
  *  « Example, not your result yet » (MentionExemple) above the result, so the head no longer adds “(example)”. */
 const typed = (touched?: Record<string, boolean>) => !!touched && Object.keys(touched).length > 0;
@@ -56,7 +60,13 @@ export function shortBank(name: string) {
  * 2026-11-08: a prefilled “median” rate on today's prime was called dearer than 8 loans in 10 priced on last
  * year's lower prime). The same margin as the median always reads TYPICAL_VERDICT.
  */
-export const TYPICAL_VERDICT = 'typical for this size: half of similar loans paid less, half more';
+export const TYPICAL_VERDICT = 'typical for this size';
+/** The typical verdict with its own counts (naive test of 2026-11-10: “half less, half more” above “45 / 25 / 30 in 100”). */
+export function typicalSplit(rate: number, amount: number, t: E.RateType): string {
+  const pl = E.marginPlace(rate - P.prime.rate, amount, t);
+  if (!pl) return '';
+  return `${Math.round(pl.below * 100)} in 100 paid a lower margin, ${Math.round(pl.above * 100)} a higher one`;
+}
 export function placeLine(rate: number, amount: number, t: E.RateType): string | null {
   const pl = E.marginPlace(rate - P.prime.rate, amount, t);
   if (!pl) return null;
@@ -74,8 +84,6 @@ const FY = DATA_YEAR;
 const TRUE_COST = 'True yearly cost (APR): rate + SBA fee';
 const LAST = 'similar SBA loans';
 const FOIA_NOTE = `Similar loans: the SBA 7(a) loans of the same size approved ${DATA_YEAR}, from SBA’s public loan file.`;
-// Plain words (final naive test of 2026-11-09: “margin over prime… does not count against you”, not understood).
-const MARGIN_NOTE = `We compare your rate with others after taking out prime, the banks’ base rate, so a prime that went up or down since does not make yours look worse.`;
 /** “31 in 100”: a share of loans never shown as a percent next to rates (naive test of 2026-11-08). */
 const per100 = (x: number) => `${Math.round(x * 100)} in 100`;
 /** Typical rate for an amount: median of FY loans of the same size band, moved to today's prime by its median spread. */
@@ -109,18 +117,47 @@ const SPECS: Record<string, MiniSpec> = {
       const apr = E.effectiveRate(r.principal - r.fee.fee, r.monthly, r.months);
       const place = placeLine(v.rate, v.amount, t);
       const rows: Array<[string, string]> = [
-        ['SBA guaranty fee, added to the loan', r.fee.waived ? '$0 (waived)' : m(r.fee.fee)],
+        // Short labels, one line each on a phone (naive test of 2026-11-10).
+        ['SBA fee (added to the loan)', r.fee.waived ? '$0 (waived)' : m(r.fee.fee)],
         // “for this loan size” (final naive test of 2026-11-09: 13.00% here, 13.50% in the landscaper example below).
         ['SBA cap for this loan size (highest rate allowed)', `${r2(r.maxRate)}${r.overMax ? ': yours is above it' : ''}`],
         ['Interest, all years', m(r.interest)],
-        ['Total: fee + interest', m(r.interest + r.fee.fee)],
+        // “Total” read as everything repaid (naive test of 2026-11-10): the loan itself is named as left out.
+        ['Cost of the loan: fee + interest (not counting the amount borrowed)', m(r.interest + r.fee.fee)],
         [TRUE_COST, r2(apr)],
       ];
-      if (place) rows.push([`Your rate vs. ${LAST}`, place]);
-      const feeTip = !relief(v.relief) && r.fee.fee > 0 && v.amount <= P.fees7a.waiver.upTo ? `Fee counted: ${m(r.fee.fee)}. A manufacturer, farm, food supplier or rural business pays $0: change the last field. ` : '';
+      if (place) rows.push([`Your rate vs. ${LAST}`, place === TYPICAL_VERDICT ? `${place}: ${typicalSplit(v.rate, v.amount, t)}` : place]);
+      const feeTip = !relief(v.relief) && r.fee.fee > 0 && v.amount <= P.fees7a.waiver.upTo ? 'A manufacturer, farm, food supplier or rural business pays no SBA fee: change the last field. ' : '';
       const why = r.fee.fee > 0 ? `True yearly cost: your ${r2(v.rate)} rate plus the ${m(r.fee.fee)} SBA fee, spread over ${yrs} years. ` : '';
       return { head: [ex('Monthly payment', touched), m(r.monthly)], rows, note: `${why}${feeTip}${PRIME[0].toUpperCase()}${PRIME.slice(1)}. ${FOIA_NOTE}`,
-        exemple: assumed(`a ${m(v.amount)} loan over ${yrs} years at ${r2(v.rate)} ${t}, the typical rate for that size`) };
+        sub: sup(`${m(v.amount)} over ${yrs} years at ${r2(v.rate)} ${t}, SBA fee added: the same payment every month${t === 'variable' ? ' while prime stays where it is' : ''}.`),
+        exemple: assumed() };
+    },
+  },
+  /** 7(a) page (naive test of 2026-11-10: the home calculator repeated, “I am going round in circles”): what the
+   *  program asks of the business, by its stage; the payment itself is on the home calculator, one link away. */
+  qualify: {
+    title: 'What a 7(a) loan asks of your business',
+    cta: 'Monthly payment with your own rate',
+    ctaPage: 'home',
+    inputs: [
+      { id: 'stage', label: 'Your business', def: 0, options: opt(['Choose…', 'Open for 2 years or more', 'New, or not open yet (start-up)', 'Buying an existing business']), help: 'Not sure? Choose the line closest to your plan: the result tells what the lender will ask.' },
+      money('amount', 'Loan amount', EXAMPLE_AMOUNT, P.sevenA.maxLoan, `${EXAMPLE_HELP} Up to ${m(P.sevenA.maxLoan)}.`),
+    ],
+    run: (v) => {
+      const amount = v.amount;
+      const g = E.upfrontFee({ amount });
+      const stage = Math.round(v.stage);
+      const cash = stage === 2 ? `at least ${m((amount * P.sevenA.startupEquity) / (100 - P.sevenA.startupEquity))}: ${P.sevenA.startupEquity}% of the whole project` : stage === 1 ? 'no SBA minimum: the lender decides' : stage === 3 ? 'set by the lender: ask how much' : 'choose your business above';
+      const papers = stage === 2 ? 'a business plan and projections' : stage === 1 ? 'tax returns and cash flow of recent years' : stage === 3 ? 'a valuation of the business, the seller’s figures' : 'choose your business above';
+      return { head: ['Part of the loan SBA guarantees to your bank', `${m(g.guaranteed)} (${g.pct}%)`], rows: [
+        ['Cash of your own', cash],
+        ['Papers the lender reads first', papers],
+        ['Personal guarantee', 'each owner of 20% or more signs one'],
+        ['SBA cap for this loan size (highest rate allowed)', `${r2(E.maxRate(amount, 'variable'))} variable`],
+        ['SBA fee (added to the loan)', m(g.fee)],
+      ], sub: sup(`On a ${m(amount)} loan: the bank lends all of it; if the business fails to repay, SBA covers the bank for this part.`),
+        exemple: 'Change any figure to see yours.', note: 'The lender checks the seven SBA requirements below and decides; meeting them is not a promise of a loan.' };
     },
   },
   /** Rate page: today's maximums and where an offer sits. */
@@ -142,21 +179,23 @@ const SPECS: Record<string, MiniSpec> = {
       const rows: Array<[string, string]> = [
         [`SBA cap for this loan size today (highest rate allowed)`, `${r2(mx)} (prime + ${formatNumber(E.maxSpread(v.amount, t), 1)})`],
         // “margin” and “points” said where they are read (final naive test of 2026-11-09).
-        ['Your margin: your rate minus prime (the banks’ base rate)', `${formatNumber(v.rate - P.prime.rate, 2)} points`],
+        ['Your margin: your rate minus prime (the banks’ base rate), in points (1 point = 1%)', `${formatNumber(v.rate - P.prime.rate, 2)} points`],
       ];
       if (pl) {
         rows.push([`Typical margin, loans of ${E.BAND_LABELS[b]}`, `${formatNumber(pl.median, 2)} points`]);
         rows.push(['Typical rate today', r2(E.round2(Math.min(P.prime.rate + pl.median, mx)))]);
         // Three shares that add up to 100 (naive test of 2026-11-08: “45% / 30%”, where are the other 25?).
         const same = Math.max(0, 1 - pl.below - pl.above);
-        rows.push([`Of ${formatNumber(pl.n, 0)} similar ${t} loans: lower margin than yours`, per100(pl.below)]);
-        rows.push(['Same margin as yours', per100(same)]);
-        rows.push(['Higher margin than yours', per100(pl.above)]);
+        rows.push([`Of ${formatNumber(pl.n, 0)} similar ${t} loans: paid a lower margin than yours`, per100(pl.below)]);
+        rows.push(['Paid the same margin as yours', per100(same)]);
+        rows.push(['Paid a higher margin than yours', per100(pl.above)]);
       }
       const atCap = t === 'variable' ? E.F.national.atCapVBand[b] : null;
       if (atCap !== null) rows.push(['Loans of this size priced at the cap', per100(atCap)]);
-      return { head: [typed(touched) ? 'Your rate is' : 'This example rate is', line ?? r2(v.rate)], rows, note: `${PRIME[0].toUpperCase()}${PRIME.slice(1)}. A point is one percentage point: 10% is 3 points above a 7% prime. Typical: half of similar loans paid less, half more. ${FOIA_NOTE}`,
-        exemple: assumed(`a ${m(v.amount)} ${t} loan at ${r2(v.rate)}, the typical rate for that size`) };
+      // The verdict and its counts in one place (naive test of 2026-11-10: “half and half” above 45 / 25 / 30).
+            return { head: [typed(touched) ? 'Your rate is' : 'This example rate is', line ?? r2(v.rate)], rows, note: `${PRIME[0].toUpperCase()}${PRIME.slice(1)}. ${FOIA_NOTE}`,
+        sub: sup(`${r2(v.rate)} ${t} on ${m(v.amount)}, set against the SBA loans of the same size approved ${DATA_YEAR}, counted below.`),
+        exemple: assumed() };
     },
   },
   /** Guaranty fee page: FY 2027 against FY 2026. */
@@ -166,7 +205,7 @@ const SPECS: Record<string, MiniSpec> = {
     ctaPage: 'home',
     inputs: [
       money('amount', 'Loan amount', EXAMPLE_AMOUNT, P.sevenA.maxLoan, EXAMPLE_HELP),
-      { id: 'prog', label: 'Loan type', def: 0, options: opt(['Standard 7(a)', `SBA Express (${P.sevenA.guaranty.expressPct}% guaranty)`]) },
+      { id: 'prog', label: 'Loan type', def: 0, options: opt(['Standard 7(a)', `SBA Express (${P.sevenA.guaranty.expressPct}% guaranty)`]), help: `Not sure? Keep standard 7(a). SBA Express is a quicker loan of ${m(P.sevenA.expressMax)} or less, half guaranteed by SBA.` },
       { id: 'relief', label: RELIEF_LABEL, def: 0, options: RELIEF, help: RELIEF_HELP },
     ],
     run: (v, touched) => {
@@ -181,8 +220,9 @@ const SPECS: Record<string, MiniSpec> = {
         [`Fee on the same loan a year earlier (${FEES_PREV})`, `${prev.waived ? '$0 (waived)' : m(prev.fee)}${Math.abs(prev.fee - now.fee) < 0.5 ? ' (no change)' : ''}`],
       ];
       if (now.lenderMayKeep > 0) rows.push(['Part the lender may keep', m(now.lenderMayKeep)]);
-      return { head: [ex('One-time SBA guaranty fee', touched), now.waived ? '$0' : m(now.fee)], rows, note: `${program === 'express' && v.amount > P.sevenA.expressMax ? `SBA Express stops at ${m(P.sevenA.expressMax)}: amount capped. ` : ''}Fee schedule for loans approved ${dd(P.fy.from)} to ${dd(P.fy.to)}. Loans of 12 months or less pay ${formatNumber(P.fees7a.shortTermRate, 2)}% instead.`,
-        exemple: assumed(`a ${m(amount)} ${program === 'express' ? 'SBA Express' : 'standard 7(a)'} loan, for a business outside the fee relief`) };
+      return { head: [ex('One-time SBA guaranty fee', touched), now.waived ? '$0' : m(now.fee)], rows, note: `${program === 'express' && v.amount > P.sevenA.expressMax ? `SBA Express stops at ${m(P.sevenA.expressMax)}: amount capped. ` : ''}Loans of 12 months or less pay ${formatNumber(P.fees7a.shortTermRate, 2)}% instead.`,
+        sub: sup(`Paid once, on a ${m(amount)} ${program === 'express' ? 'SBA Express' : 'standard 7(a)'} loan approved ${dd(P.fy.from)} to ${dd(P.fy.to)}${relief(v.relief) ? '' : ', business outside the fee relief'}.`),
+        exemple: assumed() };
     },
   },
   /** Express page. */
@@ -207,7 +247,7 @@ const SPECS: Record<string, MiniSpec> = {
         ['Same amount as a standard 7(a)', m(std.fee)],
         ['SBA cap for this loan size (highest rate allowed), variable', r2(E.maxRate(amount, 'variable'))],
         ['Interest over the term', m(mo * months - amount - fee.fee)],
-      ], exemple: assumed(`a ${m(amount)} SBA Express loan over ${months / 12} years at ${r2(v.rate)}, the typical rate for that size`), note: `${PRIME[0].toUpperCase()}${PRIME.slice(1)}. Express has the same SBA cap as other 7(a) loans; its guaranty is ${P.sevenA.guaranty.expressPct}%, so the fee is charged on half the loan.` };
+      ], sub: sup(`${m(amount)} SBA Express over ${months / 12} years at ${r2(v.rate)}, fee added: the same payment every month while prime stays put.`), exemple: assumed(), note: `${PRIME[0].toUpperCase()}${PRIME.slice(1)}. Express has the same SBA cap as other 7(a) loans; its guaranty is ${P.sevenA.guaranty.expressPct}%, so the fee is charged on half the loan.` };
     },
   },
   /** SBA against a conventional loan typed by the reader. */
@@ -219,7 +259,7 @@ const SPECS: Record<string, MiniSpec> = {
       money('amount', 'Loan amount', EXAMPLE_AMOUNT, P.sevenA.maxLoan, EXAMPLE_HELP),
       { ...rateIn('sbaRate', 'SBA rate offered', typicalRate(EXAMPLE_AMOUNT), RATE_HELP), follow: (v) => typicalRate(v.amount) },
       { id: 'sbaYears', label: 'SBA term', def: 10, options: TERM },
-      { ...rateIn('convRate', 'Bank loan without SBA: rate offered', typicalRate(EXAMPLE_AMOUNT), 'Type the bank’s quote. Until you do, it is the same rate as the SBA line.'), follow: (v) => v.sbaRate },
+      { ...rateIn('convRate', 'Bank loan without SBA: rate offered', typicalRate(EXAMPLE_AMOUNT), 'Type the bank’s quote. No quote yet? Leave it: it copies the SBA rate.'), follow: (v) => v.sbaRate },
       // Same term by default (naive test of 2026-11-08: 10 years against 5 put “$101,129” in large type). Plain
       // year labels: “(most loans)” is about SBA loans (final naive test of 2026-11-09).
       { id: 'convYears', label: 'Bank loan term', def: 10, options: YEARS.map((y) => ({ value: String(y), label: `${y} years` })), help: 'Bank loans are often shorter: choose the term on the bank’s offer.' },
@@ -246,9 +286,13 @@ const SPECS: Record<string, MiniSpec> = {
       ];
       const bankTyped = !!touched && !!(touched.convRate || touched.convYears || touched.convFee);
       const note = `${Math.abs(dm) >= 0.5 && sy !== cy ? 'A longer loan has the lower payment and the higher total: choose by what your monthly cash flow can carry. ' : ''}The SBA fee is added to the loan; the bank fee is paid at signing. The true yearly cost (APR) spreads every fee over the loan, so it compares two offers fairly even when their terms differ.`;
+      // Naive test of 2026-11-10, three testers out of three: “$7,850 more” in large type, with no bank offer typed,
+      // read as “SBA is dearer, drop it”. Until the bank's offer is typed, the large figure is the SBA payment, the
+      // same as on the home page, and the fee's weight is said in a sentence that names its hypothesis.
       if (!bankTyped && sy === cy && Math.abs(v.convRate - v.sbaRate) < 1e-9) {
-        return { head: ['Same rate and term at the bank: the SBA loan costs more, by its fee and the interest on it. Type the bank’s offer to compare.', `${m(Math.abs(dc))} more`], rows, note,
-          exemple: assumed(`a ${m(v.amount)} loan, both at ${r2(v.sbaRate)} over ${sy} years, no bank fee`) };
+        return { head: ['Type the bank’s offer to compare. For now, the SBA loan: monthly payment', m(c.sba.monthly)], rows, note,
+          sub: sup(`${m(v.amount)} over ${sy} years at ${r2(v.sbaRate)}, SBA fee added. If a bank lent the same at the same rate and term with no fee, the SBA loan would cost ${m(Math.abs(dc))} more in total, its fee and the interest on it. A real bank offer is often shorter or at another rate.`),
+          exemple: assumed() };
       }
       let head: [string, string];
       if (sy === cy) head = Math.abs(dc) < 0.5 ? ['Fees and interest, all years: the same for both loans', m(c.sba.cost)] : [`Lower total, fees and interest: the ${dc > 0 ? 'bank loan' : 'SBA loan'}`, `${m(Math.abs(dc))} less`];
@@ -256,7 +300,7 @@ const SPECS: Record<string, MiniSpec> = {
         head = [Math.abs(da) < 0.005 ? 'True yearly cost (APR), fees counted: the same' : `Lower true yearly cost (APR), fees counted: the ${da > 0 ? 'bank loan' : 'SBA loan'}`, r2(Math.min(c.sba.apr, c.conv.apr))];
         rows.push([Math.abs(dc) < 0.5 ? 'Total paid in fees and interest' : `Lower total: the ${dc > 0 ? 'bank loan' : 'SBA loan'}${why}`, Math.abs(dc) < 0.5 ? 'the same' : m(Math.abs(dc))]);
       }
-      return { head, rows, note };
+      return { head, rows, note, sub: sup(`${m(v.amount)}: SBA ${sy} years at ${r2(v.sbaRate)}, bank ${cy} years at ${r2(v.convRate)}${v.convFee ? ` with a ${formatNumber(v.convFee, 2)}% fee` : ''}.`) };
     },
   },
   /** 504 page. */
@@ -267,10 +311,10 @@ const SPECS: Record<string, MiniSpec> = {
     inputs: [
       money('project', 'Project cost (building, land, equipment)', 1500000, 20_000_000),
       // Plain labels (final naive test of 2026-11-09: “Existing, standard property” was not understood).
-      { id: 'biz', label: 'Your business and building', def: 0, options: opt(['Business over 2 years old, ordinary building', 'New business (under 2 years old)', 'Special-purpose building (hotel, car wash…)', 'New business and special-purpose building']) },
+      { id: 'biz', label: 'Your business and building', def: 0, options: opt(['Business over 2 years old, ordinary building', 'New business (under 2 years old)', 'Single-use building (hotel, car wash…)', 'New business and single-use building']), help: 'Not sure? Keep the first line. A single-use building, such as a hotel or a car wash, is hard to use for anything else, so you put in more cash.' },
       { id: 'term', label: 'Term of the CDC loan', def: 25, options: P.fees504.terms.map((t) => ({ value: String(t), label: `${t} years` })) },
-      rateIn('deb', 'Rate on the CDC loan (fixed)', P.prime.rate, `Set when SBA sells the month’s CDC loans: ask your CDC for the latest. The ${r2(P.prime.rate)} shown is only an example, not a published rate.`),
-      rateIn('bank', 'Bank rate on the first loan', P.prime.rate + 1.5, 'Type your bank’s quote. The figure shown is only an example.'),
+      rateIn('deb', 'Rate on the CDC loan (fixed)', P.prime.rate, `Not sure? Keep ${r2(P.prime.rate)}: an example, not a published rate. Your CDC gives you the rate of the month your loan is funded.`),
+      rateIn('bank', 'Bank rate on the first loan', P.prime.rate + 1.5, 'Type your bank’s quote. No quote yet? Keep this example.'),
       // The bank's term was fixed at 10 years with no field (final naive test of 2026-11-09).
       { id: 'bankYears', label: 'Term of the bank loan', def: 10, options: [10, 15, 20, 25].map((y) => ({ value: String(y), label: `${y} years` })), help: 'From the bank’s offer: often 10 years, sometimes longer.' },
     ],
@@ -285,17 +329,20 @@ const SPECS: Record<string, MiniSpec> = {
       if (r.bankMonths > r.months) rows.push([`After year ${t}: the CDC loan is paid off, you pay the bank loan only`, `${m(r.bankMonthly)}/mo`]);
       rows.push(
         [`Your cash (${r.borrowerPct}%)`, m(r.borrower)],
-        [`Bank loan (${P.fees504.structure.bank}%), ${by} years`, `${m(r.bank)} · ${m(r.bankMonthly)}/mo`],
-        [`CDC loan, ${t} years, fees included`, `${m(r.gross)} · ${m(r.debMonthly)}/mo`],
-        ['One-time fees, added to the CDC loan', m(r.gross - r.net)],
+        // One figure per line (naive test of 2026-11-10: “$750,000 · $9,299/mo” unreadable).
+        [`Bank loan (${P.fees504.structure.bank}% of the project), ${by} years`, m(r.bank)],
+        [`CDC loan, ${t} years, fees included`, m(r.gross)],
+        ['One-time fees (SBA, CDC, bond sale, closing), added to the CDC loan', m(r.gross - r.net)],
         // An amount, not “0.828%” (final naive test of 2026-11-09).
         ['Yearly fees on the CDC loan, first year', `about ${m((r.gross * r.annualFeePct) / 100)}`],
       );
       const first = Math.min(r.months, r.bankMonths) / 12;
       const both = r.months !== r.bankMonths;
       return { head: [both ? `Monthly payments, first ${first} years (bank + CDC)` : 'Monthly payments (bank + CDC)', m(r.debMonthly + r.bankMonthly)], rows,
-        note: `CDC: a nonprofit lender approved by SBA (certified development company). The yearly fees, ${formatNumber(r.annualFeePct, 3)}% of what you still owe on the CDC loan, are inside its monthly payment. The fee table below lists each fee, one by one.`,
-        exemple: touched && Object.keys(touched).length ? undefined : assumed(`a ${m(v.project)} building for a business over 2 years old: ${r.borrowerPct}% your cash, the CDC loan at ${r2(v.deb)} over ${t} years, the bank loan at ${r2(v.bank)} over ${by} years`) };
+        note: `CDC: a nonprofit lender approved by SBA (certified development company). The CDC loan’s yearly fees are already inside its monthly payment. The fee table below lists each fee, one by one.`,
+        // The result said in one sentence first (naive test of 2026-11-10).
+        sub: sup(`On a ${m(v.project)} project you put in ${m(r.borrower)} and repay two loans: the bank’s, ${m(r.bankMonthly)} a month for ${by} years, and the CDC’s, ${m(r.debMonthly)} a month for ${t} years.`),
+        exemple: touched && Object.keys(touched).length ? undefined : assumed() };
     },
   },
   /** Microloan page. */
@@ -318,7 +365,7 @@ const SPECS: Record<string, MiniSpec> = {
         ['Your rate', `${r2(v.rate)}${v.rate > mx + 1e-9 ? ': above the limit' : ''}`],
         ['Monthly payment', m(mo)],
         ['Interest over the term', m(mo * n - v.amount)],
-      ], exemple: assumed(`a ${m(v.amount)} microloan over ${formatNumber(Math.min(v.years || 1, P.micro.maxYears), 0)} years at ${r2(v.rate)}`), note: `SBA microloan rules: ${P.micro.maxYears} years at most. Fees and required training are set by each intermediary and are not included.` };
+      ], sub: sup(`For a ${m(v.amount)} microloan, on the intermediary’s ${r2(v.inter)} cost of money.`), exemple: assumed(), note: `SBA microloan rules: ${P.micro.maxYears} years at most. Fees and required training are set by each intermediary and are not included.` };
     },
   },
   /** Prepayment page: subsidy recoupment fee. */
@@ -339,7 +386,7 @@ const SPECS: Record<string, MiniSpec> = {
         ['Free threshold that year', `${m(r.threshold)} (${P.sevenA.recoupment.thresholdPct}%)`],
         ['Rate in that year', r.rate ? `${r.rate}% of the amount prepaid` : 'none'],
         ['Verdict', r.applies ? 'fee due' : Math.round(v.term) < P.sevenA.recoupment.minTermYears ? 'no fee: term under 15 years' : r.rate === 0 ? 'no fee after year 3' : 'no fee: within the 25%'],
-      ], exemple: assumed(`a ${m(v.loan)} loan over ${Math.round(v.term)} years, with ${m(v.paid)} repaid early in year ${Math.round(v.year)}`), note: 'SBA rule: the fee is on the whole amount prepaid in that year once it exceeds 25% of the highest principal balance in that 12-month period. A 7(a) lender may not charge a prepayment fee of its own.' };
+      ], sub: sup(`${m(v.paid)} repaid early in year ${Math.round(v.year)} of a ${m(v.loan)} loan over ${Math.round(v.term)} years.`), exemple: assumed(), note: 'SBA rule: the fee is on the whole amount prepaid in that year once it exceeds 25% of the highest principal balance in that 12-month period. A 7(a) lender may not charge a prepayment fee of its own.' };
     },
   },
   /** State pages: the reader's rate against the state's approvals. */
@@ -349,10 +396,10 @@ const SPECS: Record<string, MiniSpec> = {
     ctaPage: 'sba-loans-by-state',
     inputs: [
       { id: 'st', label: 'State', def: 0, options: ST },
-      money('amount', 'Loan amount', EXAMPLE_AMOUNT, P.sevenA.maxLoan, 'Example: the median SBA loan in this state. Type yours.'),
+      money('amount', 'Loan amount', EXAMPLE_AMOUNT, P.sevenA.maxLoan, 'Example: the typical SBA loan in this state, the middle one (half were smaller, half larger). Type yours.'),
       // A term field (final naive test of 2026-11-09: “Monthly payment over 10 years”, with no way to change it).
       { id: 'years', label: 'Term', def: 10, options: TERM, help: TERM_HELP },
-      { ...rateIn('rate', 'Variable rate offered', typicalRate(EXAMPLE_AMOUNT), `Example until you type your quote: the typical rate for this amount across the U.S., today’s prime ${r2(P.prime.rate)} plus the median margin. A fixed rate? Use the calculator on the home page.`), follow: (v) => typicalRate(v.amount) },
+      { ...rateIn('rate', 'Variable rate offered', typicalRate(EXAMPLE_AMOUNT), `No quote yet? Keep this example: today’s prime, ${r2(P.prime.rate)}, plus the margin (the add-on above prime) a typical U.S. borrower of this size paid. A fixed rate? Use the calculator on the home page.`), follow: (v) => typicalRate(v.amount) },
       { id: 'relief', label: RELIEF_LABEL, def: 0, options: RELIEF, help: RELIEF_HELP },
     ],
     run: (v, touched) => {
@@ -365,14 +412,16 @@ const SPECS: Record<string, MiniSpec> = {
       // The reader's answer in large type, the state's statistics below (naive test of 2026-11-08: “4,698”,
       // a count of loans, was the big figure and read as nobody's result).
       const rows: Array<[string, string]> = [
-        [`Your rate vs. ${LAST} in all states`, place ?? '—'],
+        // The state's own figure first, the U.S. comparison named as such (naive test of 2026-11-10).
         [`${s.name}: typical rate at approval, loans of ${E.BAND_LABELS[b]}`, medState !== null ? r2(medState) : 'too few loans to show'],
-        ['SBA guaranty fee, added to the loan', r.fee.waived ? '$0 (waived)' : m(r.fee.fee)],
+        [`Your rate vs. similar loans (all U.S.)`, place ?? '—'],
+        ['SBA fee (added to the loan)', r.fee.waived ? '$0 (waived)' : m(r.fee.fee)],
         [`${s.name}: SBA 7(a) loans approved ${DATA_YEAR}`, formatNumber(s.n, 0)],
-        [`${s.name}: median loan`, m(s.medAmt)],
+        [`${s.name}: middle-sized loan (half smaller, half larger)`, m(s.medAmt)],
       ];
-      return { head: [ex(`Monthly payment over ${yrs} years`, touched), m(r.monthly)], rows, note: `${FOIA_NOTE} ${PRIME[0].toUpperCase()}${PRIME.slice(1)}. ${MARGIN_NOTE}`,
-        exemple: assumed(`the median ${s.name} loan, ${m(v.amount)}, over ${yrs} years at ${r2(v.rate)} variable, the typical rate for that size`) };
+      return { head: [ex(`Monthly payment over ${yrs} years`, touched), m(r.monthly)], rows, note: `${FOIA_NOTE} ${PRIME[0].toUpperCase()}${PRIME.slice(1)}.`,
+        sub: sup(`${m(v.amount)} over ${yrs} years at ${r2(v.rate)} variable, SBA fee added.`),
+        exemple: assumed() };
     },
   },
   /** Lender page: one lender's pricing in the FOIA file. */
@@ -392,7 +441,7 @@ const SPECS: Record<string, MiniSpec> = {
         ['Its variable loans priced at the SBA cap', L.atCapV !== null ? per100(L.atCapV) : '—'],
         [`Its SBA 7(a) loans approved ${FY}`, formatNumber(L.n, 0)],
         ['Its median loan', m(L.medAmt)],
-      ], exemple: assumed(`${shortBank(L.name)} quoting you ${r2(v.rate)} variable`), note: `Margin = rate at approval minus the prime rate of that month. Loans approved ${FY}, from SBA’s public loan file.` };
+      ], sub: sup(`Its variable loans approved ${FY}; your quote: ${r2(v.rate)} variable.`), exemple: assumed(), note: `Margin = rate at approval minus the prime rate of that month. Loans approved ${FY}, from SBA’s public loan file.` };
     },
   },
 };

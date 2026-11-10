@@ -170,11 +170,11 @@ describe('one median, one verdict (naive test of 2026-11-08)', () => {
     expect(spec.inputs.find((i) => i.id === 'sbaYears')!.def).toBe(spec.inputs.find((i) => i.id === 'convYears')!.def);
   });
   it('one example amount on every page: the median loan of the SBA file', () => {
-    for (const k of ['cost', 'ratecheck', 'fee', 'express', 'compare']) expect(getSpec(k).inputs.find((i) => i.id === 'amount')!.def, k).toBe(220_000);
+    for (const k of ['cost', 'ratecheck', 'fee', 'express', 'compare', 'qualify']) expect(getSpec(k).inputs.find((i) => i.id === 'amount')!.def, k).toBe(220_000);
   });
   it('the rate checker splits similar loans into three shares that add up to 100', () => {
     const out = getSpec('ratecheck').run({ amount: 220_000, type: 0, rate: typicalRate(220_000) });
-    const shares = out.rows.filter(([l]) => /margin than yours|Same margin/.test(l)).map(([, v]) => Number(v.split(' ')[0]));
+    const shares = out.rows.filter(([l]) => /margin than yours|same margin/i.test(l)).map(([, v]) => Number(v.split(' ')[0]));
     expect(shares).toHaveLength(3);
     expect(Math.abs(shares.reduce((a, b) => a + b, 0) - 100)).toBeLessThanOrEqual(1);
   });

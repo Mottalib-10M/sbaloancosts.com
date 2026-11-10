@@ -11,8 +11,10 @@ const link = (id: string, lang: Locale): NavLink => ({ href: route(id, lang), la
 const inGroup = (g: Group, lang: Locale) => PAGES.filter((p) => p.group === g).map((p) => link(p.id, lang));
 // Top menu: one or two words each, never on two lines (full labels stay in the footer, RECETTE §10.3).
 const COURT: Record<Group, string> = { loans: 'Loan programs', costs: 'Rates and fees', data: 'Lenders, states', states: 'States' };
+// “Can my business get one?” had no menu entry (naive test of 2026-11-10, two testers out of three).
+const QUALIFY = (lang: Locale): NavLink => ({ href: `${route('sba-7a-loan', lang)}#requirements`, label: 'Who qualifies (SBA requirements)' });
 export const navCategories = (lang: Locale, court = true): NavCategory[] =>
-  GROUPS_ORDER.map((g) => ({ label: court ? COURT[g] : GROUP_LABEL[g], links: inGroup(g, lang) })).filter((c) => c.links.length);
+  GROUPS_ORDER.map((g) => ({ label: court ? COURT[g] : GROUP_LABEL[g], links: g === 'loans' ? [QUALIFY(lang), ...inGroup(g, lang)] : inGroup(g, lang) })).filter((c) => c.links.length);
 export const navDirect = (_lang: Locale): NavLink[] => [];
 export const footerColumns = (lang: Locale): NavCategory[] => [...GROUPS_ORDER.map((g) => ({ label: GROUP_LABEL[g], links: inGroup(g, lang) })).filter((c) => c.links.length), { label: 'This site', links: ['home', 'method', 'about', 'contact', 'editorial', 'widget', 'terms', 'privacy', 'cookies'].map((i) => link(i, lang)) }];
 export const popularLinks = (_lang: Locale): NavLink[] => [];

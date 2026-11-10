@@ -25,7 +25,10 @@ const ui = t(lang);
 const path = route(page.id, lang);
 const h = helpers(true);
 const faqs = page.faqs(h);
-const parts = plier(page.body(h)).split(/<!--tool:([a-z0-9:-]+)(?:\|(\{.*?\}))?-->/);
+const AIDE = '<p class="pli-aide" data-chrome>Details, data and worked examples: tap a heading to open it.</p>';
+const plie = plier(page.body(h));
+const aideInside = !/^\s*<details/.test(plie) && plie.includes('<details class="pli"');
+const parts = (aideInside ? plie.replace('<details class="pli"', AIDE + '<details class="pli"') : plie).split(/<!--tool:([a-z0-9:-]+)(?:\|(\{.*?\}))?-->/);
 const jsonLd = [articleSchema({ title: page.h1, description: page.description, path, lang }), webPageSchema({ name: page.h1, description: page.description, path, lang }), breadcrumbSchema([{ name: ui.breadcrumbHome, path: route('home', lang) }, { name: page.nav, path }])];
 if (page.tool) jsonLd.push(webApplicationSchema({ name: page.h1, description: page.description, path, lang }));
 if (faqs.length) jsonLd.push(faqSchema(faqs, lang));
@@ -41,13 +44,15 @@ for (let i = 0; i < parts.length; i += 3) { chunks.push({ html: parts[i] }); if 
       <p class="kicker">{page.kicker ?? groupLabel(page.group)}</p>
       <h1 class="mt-1 text-[1.75rem] font-bold text-navy-900 max-sm:leading-tight sm:text-3xl md:text-4xl">{page.h1}</h1>
       <p class="mt-2 text-base text-navy-700 sm:text-lg">{page.intro}</p>
-      <p data-chrome class="mt-1 text-xs text-navy-600">Independent site, not a lender, not the SBA (U.S. Small Business Administration). Nothing you type leaves your phone: no sign-up, no lender will call you.</p>
+      <p data-chrome class="mt-1 text-sm text-navy-700">Independent site, not a lender, not the SBA (U.S. Small Business Administration). Nothing you type leaves your phone: no sign-up, no lender will call you.</p>
     </header>
     {page.tool && <div data-outil class="mb-4"><Tool tool={page.tool} primary={true} /></div>}
-    <Clamp text={page.resume(h)} id={`clamp-${page.id}`} lang={lang} label="Show the whole paragraph here" class="mb-3" />
+    <Clamp text={page.resume(h)} id={`clamp-${page.id}`} lang={lang} label="Show the whole paragraph" class="mb-3" />
     {page.mini && <div class="mb-4"><Tool tool={page.mini} idPrefix="g" /></div>}
     <p data-chrome class="mb-6 text-sm text-navy-600">{ui.reviewedBy} <a href={route('about', lang)} class="underline hover:text-navy-900">{AUTHOR_NAME}</a> · <a href={route('editorial', lang)} class="underline hover:text-navy-900">{ui.editorialPolicy}</a> · <a href={route('method', lang)} class="underline hover:text-navy-900">{label('method', lang)}</a></p>
-    <p class="pli-aide" data-chrome>Details, data and worked examples: tap a heading to open it.</p>
+    {/* The hint sits just above the first folded heading (naive test of 2026-11-10: on the state pages it came
+         before the open lender table, which has nothing to tap). */}
+    {!aideInside && <p class="pli-aide" data-chrome>Details, data and worked examples: tap a heading to open it.</p>}
     <div class="prose prose-slate max-w-none">
       {chunks.map((c, i) => c.html !== undefined ? <Fragment set:html={c.html} /> : <div class="not-prose"><Tool tool={c.tool!} idPrefix={`s${i}`} /></div>)}
     </div>

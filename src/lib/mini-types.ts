@@ -3,6 +3,8 @@ export interface MiniInput { id: string; label: string; def: number; unit?: stri
   /** Champ facultatif rangé dans le repli « Plus de détails » ; sa valeur actuelle reste lisible dans le titre du repli. */
   avance?: boolean }
 export interface MiniOut { head: [string, string]; rows: Array<[string, string]>; note?: string;
+  /** One line under the large figure: what it assumes and over what period (brief of 2026-11-10, rule 1). */
+  sub?: string;
   /** What the prefilled example assumes, in plain words (brief of 2026-11-09): shown in the example mention while nothing is typed. */
   exemple?: string }
 export interface MiniSpec { title: string; cta: string; ctaPage?: string; inputs: MiniInput[]; /** `touched`: the fields the reader has changed (3rd naive round: a pre-filled verdict read as “you fit”). */ run: (v: Record<string, number>, touched?: Record<string, boolean>) => MiniOut }

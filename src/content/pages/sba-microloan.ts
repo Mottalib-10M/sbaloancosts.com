@@ -37,12 +37,12 @@ export default definePage({
     const ex = E.cost7a({ amount: x, years: 7, rate: E.maxRate(x, 'variable'), program: 'express' });
     return `<h2>The cap on common amounts</h2>
 ${h.table(['Microloan', 'Highest rate allowed', `Payment over ${M.maxYears} years`, 'Interest at that rate'], rows, `Intermediary rate ${h.r(inter)} (5-year Treasury ${h.r(P.treasury5y.rate)} of ${h.date(P.treasury5y.date)}, rounded, less ${formatNumber(M.intermediaryLessTreasury, 2)}). Your intermediary’s actual SBA rate may differ.`, ['r', 'r', 'r', 'r'])}
+<p>These are the legal caps, computed from the rule and today’s Treasury rate. SBA does not publish its microloan file, so this page cannot show what borrowers actually paid: ask each intermediary for its rate, its fees and the SBA rate it pays.</p>
 <p>Note the step at ${h.m(M.smallUpTo)}: a loan of ${h.m(10000)} may carry ${formatNumber(M.spreadSmall - M.spreadLarge, 2)} point more than one of ${h.m(10001)}. Specialized intermediaries, whose microloans average ${h.m(M.smallUpTo)} or less, borrow from SBA at the Treasury rate less ${formatNumber(M.specializedLessTreasury, 2)} points, so their cap is lower.</p>
 <h2>Microloan or SBA Express?</h2>
 <p>A ${h.m(x)} SBA Express loan over 7 years at today’s variable cap, ${h.r(ex.maxRate)}, costs ${h.m(ex.monthly)} a month with its ${h.m(ex.fee.fee)} guaranty fee financed. The microloan cap for the same amount is ${h.r(E.microMaxRate(x, inter))}, and there is no SBA guaranty fee, though the intermediary may charge its own fees and require training. The two are made by different lenders to different borrowers: a bank making an Express loan wants a credit history, while a microlender is set up for owners who do not yet have one. See ${h.a('sba-express-loan', 'SBA Express')} for the bank side.</p>
 <h2>What to ask an intermediary</h2>
 <p>Four questions settle the cost of a microloan. What rate does it pay SBA on the loan that funds yours, since that sets your cap? What rate and fees will it charge you, in writing? Is training or business advice required, and does it cost anything? And what collateral and personal guarantee does it require? The rule leaves those last points to the intermediary, which must still take into account its own rules and SBA’s on eligibility. Because the term can run to ${M.maxYears} years, a lower payment is possible on a longer term, at the price of more interest over the life of the loan.</p>
-<h2>What the SBA data does not show</h2>
-<p>SBA publishes its loan-level file for 7(a) and 504 loans, not for microloans, so this page cannot show what microloan borrowers actually paid. The figures above are the legal caps, computed from the rule and today’s Treasury rate; ask each intermediary for its rate, fees and the SBA rate it pays.</p>`;
+`;
   },
 });

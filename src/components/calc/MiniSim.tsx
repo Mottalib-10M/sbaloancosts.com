@@ -39,6 +39,8 @@ export default function MiniSim({ kind, lang = 'en', href, defaults = {}, primar
           <MentionExemple lang={lang} touched={touched} texte={out.exemple} />
           <p className="text-sm font-medium text-navy-700">{out.head[0]}</p>
           <p className="tabular-nums mt-1 text-4xl font-bold text-navy-900">{out.head[1]}</p>
+          {/* Brief of 2026-11-10, rule 1: under the large figure, what it assumes and over what period. */}
+          {out.sub && <p data-suppose className="mt-1 text-[0.9375rem] leading-snug text-navy-700">{out.sub}</p>}
           <table className="ledger mt-3 w-full text-sm"><tbody>
             {out.rows.map(([l, x]) => <tr key={l}><td className="pr-3 text-navy-700">{l}</td><td className="tabular-nums text-right text-navy-900">{x}</td></tr>)}
           </tbody></table>

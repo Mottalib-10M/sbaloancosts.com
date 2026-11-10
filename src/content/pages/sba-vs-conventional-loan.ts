@@ -1,6 +1,7 @@
 import { definePage } from '../../lib/guide-types';
 import { P } from '../../lib/engine/params';
 import * as E from '../../lib/engine/sba';
+import { typicalRate, EXAMPLE_AMOUNT } from '../../lib/mini-specs';
 
 const N = E.F.national;
 
@@ -25,8 +26,9 @@ export default definePage({
     { q: 'Do both loans need a personal guarantee?', a: 'On an SBA loan, every owner of 20% or more must personally guarantee it, and if no one owns that much, at least one owner must. Conventional lenders usually ask for guarantees too, but set their own threshold. Read both term sheets for the guarantee, the collateral and any covenants before comparing rates.' },
   ],
   body: (h) => {
-    const amount = 300000;
-    const sbaRate = E.round2(N.medSpreadVBand[2]! + P.prime.rate);
+    // The page's one example (brief of 2026-11-10, rule 1): the $220,000 loan of every calculator, at its typical rate.
+    const amount = EXAMPLE_AMOUNT;
+    const sbaRate = typicalRate(amount);
     const rows = [[`SBA 7(a), 10 years at ${h.r(sbaRate)}`, 'SBA fee'], [`Same rate, 5 years`, 'no SBA fee'], [`Same rate, 5 years`, '1% origination fee']];
     const c10 = E.compare({ amount, sbaYears: 10, sbaRate, convYears: 5, convRate: sbaRate, convFeePct: 0 });
     const c1 = E.compare({ amount, sbaYears: 10, sbaRate, convYears: 5, convRate: sbaRate, convFeePct: 1 });
@@ -36,11 +38,11 @@ export default definePage({
       [`Conventional, ${rows[2][0].toLowerCase()}, ${rows[2][1]}`, h.m(c1.conv.fee), h.m(c1.conv.monthly), h.m(c1.conv.interest), h.r(c1.conv.apr)],
     ];
     return `<h2>Same rate, different shape</h2>
-<p>To isolate the structure, the example below gives both loans the same rate: the typical (median) margin of loans approved ${h.fy} for loans of ${E.BAND_LABELS[2]}, ${h.r(N.medSpreadVBand[2]!)} over prime, applied to today’s prime. The rate of a conventional offer is yours to type in the calculator; this site does not publish bank rates it cannot source.</p>
+<p>To isolate the structure, the example below gives both loans the same rate: the typical rate for the ${h.m(amount)} example, ${h.r(sbaRate)}, the one half of similar SBA borrowers paid less than. The rate of a conventional offer is yours to type in the calculator; this site does not publish bank rates it cannot source.</p>
 ${h.table(['Loan of ' + h.m(amount), 'Fee', 'Monthly', 'Interest', 'True yearly cost'], t, `SBA fee financed and counted in the true yearly cost; conventional fee paid at closing. Prime ${h.r(P.prime.rate)} of ${h.date(P.prime.date)}.`, ['l', 'r', 'r', 'r', 'r'])}
-<p>The five-year loan costs ${h.m(c10.conv.monthly - c10.sba.monthly)} more a month and saves ${h.m(c10.sba.interest - c10.conv.interest)} in interest. For a business whose cash flow is tight, the monthly figure decides; for one with room to spare, the shorter loan is cheaper. The true yearly cost shows what the fee does: at an equal note rate the SBA loan’s is higher by the weight of the guaranty fee, so a conventional quote is cheaper overall unless its rate is higher by more than that gap.</p>
+<p>The five-year loan costs ${h.m(c10.conv.monthly - c10.sba.monthly)} more a month and saves ${h.m(c10.sba.interest - c10.conv.interest)} in interest. For a business whose cash flow is tight, the monthly figure decides; for one with room to spare, the shorter loan is cheaper. The true yearly cost (APR) shows what the fee does: at an equal rate, the SBA loan’s is higher by the weight of its fee. A bank quote is cheaper overall unless its rate is higher by more than that gap.</p>
 <h2>What else differs</h2>
-<p>Collateral: SBA forbids declining a loan only because collateral is short, but requires the lender to take what is available, including real estate with enough equity. Prepayment: an SBA loan of 15 years or more carries the ${h.a('sba-prepayment-penalty', 'subsidy recoupment fee')} in its first three years; a conventional loan has whatever penalty the bank writes. Rate risk: ${h.pc(1 - N.fixedShare)} of SBA loans are variable, so the payment follows prime. A conventional quote also comes with the bank’s own fees, which belong in the calculator’s fee field.</p>
+<p>Collateral (what the lender can take if you do not repay): SBA forbids declining a loan only because collateral is short, but requires the lender to take what is available, including real estate with enough equity. Prepayment: an SBA loan of 15 years or more carries the ${h.a('sba-prepayment-penalty', 'subsidy recoupment fee')} in its first three years; a conventional loan has whatever penalty the bank writes. Rate risk: ${h.pc(1 - N.fixedShare)} of SBA loans are variable, so the payment follows prime. A conventional quote also comes with the bank’s own fees, which belong in the calculator’s fee field.</p>
 <p>The best check on an SBA quote is the data: see where its rate falls on the ${h.a('sba-loan-rates', 'rates page')}, and what the lender charged others on the ${h.a('sba-lenders', 'lender page')}.</p>`;
   },
 });

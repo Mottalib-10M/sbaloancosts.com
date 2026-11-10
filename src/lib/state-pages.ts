@@ -315,7 +315,7 @@ function page(code: E.StateCode, i: number): PageDef {
     `${num(s.n)} SBA 7(a) loans were approved for ${name} projects in ${FYS}: median ${m(s.medAmt)}, rates paid, busiest lenders and 504 loans, with a payment calculator.`,
     `${num(s.n)} SBA 7(a) loans approved in ${name}, ${FYS}: median ${m(s.medAmt)}, rates paid, busiest lenders, 504 loans and your payment at today’s prime rate of interest.`,
   ], 150, 160);
-  const build = (k: number) => `${name}, ${FY}: ${num(s.n)} SBA 7(a) approvals for ${h0(s.total)} (${ordinal(s.rank.n)} of the 50 states and DC, SBA file of ${displayDate(E.F.asOf, 'en-US')}). ${obs.slice(0, k).map((o) => o.short).join(' ')} Today’s cap on a ${m(Math.round(s.medAmt / 1000) * 1000)} variable loan: ${r(E.maxRate(s.medAmt, 'variable'))}.`;
+  const build = (k: number) => `${name}, ${FY}: ${num(s.n)} SBA 7(a) approvals for ${h0(s.total)} (${ordinal(s.rank.n)} by number of loans, SBA file of ${displayDate(E.F.asOf, 'en-US')}). ${obs.slice(0, k).map((o) => o.short).join(' ')} Today’s cap on a ${m(Math.round(s.medAmt / 1000) * 1000)} variable loan: ${r(E.maxRate(s.medAmt, 'variable'))}.`;
   let k = 4;
   while (words(build(k)) < 125 && k < obs.length) k++;
   const resume = build(k);
@@ -333,14 +333,14 @@ function page(code: E.StateCode, i: number): PageDef {
     nav: name,
     card: `${num(s.n)} loans approved ${FY}, median ${m(s.medAmt)}.`,
     title, description,
-    h1: `SBA loans in ${name}: ${num(s.n)} approved in 12 months, median ${m(s.medAmt)}`,
+    // “median” unexplained in the title line (naive test of 2026-11-10): “typical loan”, defined in the standfirst.
+    h1: `SBA loans in ${name}: ${num(s.n)} approved in 12 months, typical loan ${m(s.medAmt)}`,
     // RECETTE §13 (2026-11-09): the searched term, “SBA loans in <state>”, in the standfirst and in one H2.
-    intro: `SBA loans in ${name}, in short: ${obs[0].short} ${obs[1].short}`,
+    intro: `SBA loans in ${name}, in short: ${obs[0].short} ${obs[1].short} The typical, or median, loan is the middle one: half were smaller, half larger.`,
     faqTitle: `Questions on SBA loans in ${name}`,
     resume: () => resume,
     faqs: () => faqs,
     body: (h: Helpers) => {
-      const parts = shown.map((o) => `<h2>${o.h2}</h2><p>${o.p}</p>`);
       // Home state written out (naive test of 2026-11-08: “Based in Texas?” answered “FL”).
       const home = (hq: string) => (hq === code ? `${name} (in-state)` : hq in E.F.states ? E.stateName(hq as E.StateCode) : hq);
       const lenderRows = s.lenders.map((l) => [shortBank(l.name), num(l.n), m(l.medAmt), l.medV !== null ? r(l.medV) : 'n/a', home(l.hq)]);
@@ -348,11 +348,19 @@ function page(code: E.StateCode, i: number): PageDef {
       const bySize = [...s.lenders].sort((x, y) => y.medAmt - x.medAmt);
       const big = bySize[0], small = bySize[bySize.length - 1];
       const sizes = big && small && big.medAmt > small.medAmt * 1.3 ? `: ${shortBank(big.name)}’s median loan was ${m(big.medAmt)}, ${shortBank(small.name)}’s ${m(small.medAmt)}, so their rates do not compare` : ', so compare a lender’s rate only with loans of a similar size';
-      const tbl = h.table(['Lender', `Loans, ${FY}`, 'Median loan', 'Typical variable rate', 'Lender’s home state'], lenderRows, `The five lenders that made the most SBA 7(a) loans for ${name} projects, approved ${FY}: not a recommendation. Rates fall as loans get bigger${sizes}. Ask two of them, or your own bank, for a quote. SBA’s public loan file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
+      // Naive test of 2026-11-10: “all five lenders are out of state: must I call a bank in Maine?”, answered in the caption.
+      const tbl = h.table(['Lender', `Loans, ${FY}`, 'Typical loan', 'Typical variable rate', 'Lender’s home state'], lenderRows, `The five lenders that made the most SBA 7(a) loans for ${name} projects, approved ${FY}: not a recommendation. Rates fall as loans get bigger${sizes}. Ask two of them, or your own bank, for a quote.${s.lenders.filter((l) => l.hq === code).length < 3 ? ' Lenders based in another state work across the country, by phone and online; a local bank or credit union can also make SBA loans.' : ''} SBA’s public loan file of ${h.date(E.F.asOf)}.`, ['l', 'r', 'r', 'r', 'l']);
       const bandRows = E.BAND_LABELS.map((lab, k) => [lab, num(s.bands[k]), s.medVBand[k] !== null ? r(s.medVBand[k]!) : 'too few', r(E.maxRate([50000, 250000, 350000, 1000000][k], 'variable'))]);
       const tbl2 = h.table(['Loan size', 'Loans', `Typical variable rate, ${FY}`, 'SBA cap today'], bandRows, `Typical = median, set at approval (prime ${r(6.75)} to ${r(7)}); SBA cap on prime ${r(P.prime.rate)} of ${h.date(P.prime.date)}. Cells under ${E.F.minCell} loans are not shown.`, ['l', 'r', 'r', 'r']);
       const where = s.counties.length ? `<p>Counties with the most approvals: ${list(s.counties.map((c) => `${c.name} (${num(c.n)})`))}. Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>` : `<p>Trades: ${list(s.industries.map((x) => `${what(x.name)} (${num(x.n)})`))}.</p>`;
-      return tbl + parts.slice(0, 4).join('') + tbl2 + parts.slice(4).join('') + where + `<p>All ${h.a('sba-loans-by-state', 'states compared')}.</p>`;
+      // Brief of 2026-11-10, rule 3: three sections at most. The eight observations keep their text, under three
+      // headings (who lends, what it costs, who borrows), each led by its former title in bold.
+      const GROUP: Record<string, 0 | 1 | 2> = { local: 0, conc: 0, density: 0, cu: 0, sold: 0, cap: 1, rate: 1, fixed: 1, size: 1, express: 1, long: 1 };
+      const grp = (k: number) => shown.filter((o) => (GROUP[o.key] ?? 2) === k).map((o) => `<p><strong>${o.h2}.</strong> ${o.p}</p>`).join('');
+      return tbl
+        + `<h2>Who lends in ${name}</h2>${grp(0) || `<p>${num(s.lenderCount)} lenders made at least one ${name} loan.</p>`}`
+        + `<h2>What ${name} borrowers paid</h2>${tbl2}${grp(1)}`
+        + `<h2>Who borrows in ${name}</h2>${grp(2)}${where}<p>All ${h.a('sba-loans-by-state', 'states compared')}.</p>`;
     },
   };
 }

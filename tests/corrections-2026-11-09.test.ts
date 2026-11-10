@@ -22,8 +22,10 @@ describe('comparaison SBA / prêt bancaire', () => {
     const out = getSpec('compare').run(defaults('compare'), {});
     expect(out.head[0]).not.toMatch(/Lower/);
     expect(out.head[0]).toMatch(/Type the bank’s offer/);
-    expect(out.head[1]).toMatch(/^\$[\d,]+ more$/);
-    expect(out.exemple).toMatch(/both at/);
+    // Naive test of 2026-11-10: “$7,850 more” in large type read as “SBA is dearer”. The large figure is now the SBA
+    // payment, the same as on the home page; the fee's weight is a sentence that names its hypothesis.
+    expect(out.head[1]).toBe(getSpec('cost').run(defaults('cost'), {}).head[1]);
+    expect(out.sub).toMatch(/same rate and term with no fee, the SBA loan would cost \$[\d,]+ more in total/);
   });
   it('une ligne par prêt, sans point médian', () => {
     const out = getSpec('compare').run(defaults('compare'), { convRate: true });
@@ -51,11 +53,13 @@ describe('mots simples là où on les lit', () => {
   });
 });
 
-describe('la mention d’exemple dit ce que l’exemple suppose', () => {
-  it.each(['cost', 'ratecheck', 'fee', 'express', 'compare', 'cost504', 'micro', 'prepay', 'state', 'lender'])('%s', (k) => {
+// Brief of 2026-11-10, rule 1: the line under the large figure says what it assumes (it replaced the details once
+// carried by the example mention, which now only says the figures are an example).
+describe('sous chaque gros chiffre, ce qu’il suppose', () => {
+  it.each(['cost', 'qualify', 'ratecheck', 'fee', 'express', 'compare', 'cost504', 'micro', 'prepay', 'state', 'lender'])('%s', (k) => {
     const out = getSpec(k).run(defaults(k), {});
     expect(out.exemple).toBeTruthy();
-    expect(out.exemple).toMatch(/\$|%/);
+    expect(out.sub).toMatch(/\$|%/);
   });
 });
 

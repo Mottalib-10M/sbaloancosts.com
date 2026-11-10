@@ -1,7 +1,7 @@
 import { definePage } from '../../lib/guide-types';
 import { P } from '../../lib/engine/params';
 import * as E from '../../lib/engine/sba';
-import { shortBank } from '../../lib/mini-specs';
+import { EXAMPLE_AMOUNT, shortBank } from '../../lib/mini-specs';
 
 const N = E.F.national;
 const X = P.sevenA;
@@ -37,7 +37,7 @@ ${h.table(['Loan', 'Express fee', 'Standard 7(a) fee', 'Variable cap today'], ro
 <h2>Who lends through Express</h2>
 <p>A handful of large banks carry most of the Express volume, with a median loan near ${h.m(50000)}. Their median rates were set when prime was ${h.r(6.75)} to ${h.r(7)}.</p>
 ${h.table(['Lender', `7(a) loans, ${h.fy}`, 'Through Express', 'Median loan', 'Typical variable rate'], lrows, `SBA’s public loan file of ${h.date(E.F.asOf)}. Lenders among the 25 busiest with at least three quarters of their loans through Express.`, ['l', 'r', 'r', 'r', 'r'])}
-<p>The rate depends on the lender far more than on the program. On small loans, where the cap is highest, some Express lenders priced most of their loans at the cap and others well below it; the ${h.a('sba-lenders', 'lender page')} lists the share at the cap for each. When does Express cost less than a standard loan? Only through the fee, since the rate cap is the same: on ${h.m(250000)} the Express fee is ${h.m(E.upfrontFee({ amount: 250000, program: 'express' }).fee)} against ${h.m(E.upfrontFee({ amount: 250000 }).fee)}. The rate the lender quotes usually matters more. A standard loan at a margin half a point lower saves more than that gap over 10 years on any amount above a few tens of thousands of dollars, so compare the two quotes on the true yearly cost, not on the program name.</p>
+<p>The rate depends on the lender far more than on the program. On small loans, where the cap is highest, some Express lenders priced most of their loans at the cap and others well below it; the ${h.a('sba-lenders', 'lender page')} lists the share at the cap for each. When does Express cost less than a standard loan? Only through the fee, since the rate cap is the same: on the ${h.m(EXAMPLE_AMOUNT)} example the Express fee is ${h.m(E.upfrontFee({ amount: EXAMPLE_AMOUNT, program: 'express' }).fee)} against ${h.m(E.upfrontFee({ amount: EXAMPLE_AMOUNT }).fee)}. The rate the lender quotes usually matters more. A standard loan at a margin half a point lower saves more than that gap over 10 years on any amount above a few tens of thousands of dollars, so compare the two quotes on the true yearly cost, not on the program name.</p>
 <h2>What the lender decides on its own</h2>
 <p>Under Express the lender uses its own application, credit memo, note and collateral documents, and SBA does not review the credit before the guaranty is issued. That is why the same bank may approve an Express loan in days and a standard 7(a) loan in weeks. It also means the lender’s own policy, not SBA’s, sets most of the paperwork you are asked for. SBA’s lending rules still apply on eligibility, use of proceeds, the SBA cap and the fees, and an Express loan used to buy a business must meet SBA’s rules for a change of ownership.</p>
 <p>Express is also not the only small-loan route: a ${h.a('sba-microloan', 'microloan')} reaches owners a bank will not lend to, and the ${h.a('sba-7a-loan', 'standard 7(a)')} goes up to ${h.m(X.maxLoan)}.</p>`;
