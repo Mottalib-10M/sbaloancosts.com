@@ -4,7 +4,7 @@
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/inter-var.woff2') format('woff2'); }
 @theme {
   --color-navy-50: #f8fafc; --color-navy-100: #f1f5f9; --color-navy-200: #e2e8f0; --color-navy-300: #cbd5e1; --color-navy-400: #94a3b8; --color-navy-500: #64748b; --color-navy-600: #475569; --color-navy-700: #334155; --color-navy-800: #1e293b; --color-navy-900: #0f172a; --color-navy-950: #020617;
-  --color-accent-50: #eff5fb; --color-accent-100: #dae9f6; --color-accent-200: #b6d2ec; --color-accent-300: #85b5e0; --color-accent-400: #5497d3; --color-accent-500: #1F4E79; --color-accent-600: #1a4267; --color-accent-700: #163755; --color-accent-800: #112c44; --color-accent-900: #0e2235;
+  --color-accent-50: #EEF1F4; --color-accent-100: #DDE2E9; --color-accent-200: #B6C1D0; --color-accent-300: #8498B0; --color-accent-400: #4F6B8D; --color-accent-500: #0A3161; --color-accent-600: #092B55; --color-accent-700: #08254A; --color-accent-800: #061D3A; --color-accent-900: #04162C;
   --color-success: #15803d; --color-warning: #b45309; --color-error: #dc2626;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
@@ -130,3 +130,70 @@ p[id$="-help"]:not([role="status"]), [data-fixe], [data-actuellement], [aria-liv
 :where(form, div, fieldset):has(> .grid-rows-subgrid) { align-content: start; }
 /* Dans une grille, le cadre du formulaire s'arrête sous ses champs au lieu de s'étirer à la hauteur du résultat. */
 .grid > form:has(> .grid-rows-subgrid) { align-self: start; }
+
+/* === Charte du pays (refonte d'identité validée par l'éditeur, appliquée le 2026-11-25) ===
+   En-tête plein, bandeau héros, simulateur en carte, sections alternées, chiffres-résultats, boutons et pied
+   aux couleurs du pays ; l'échelle --color-accent-* du @theme porte la couleur forte. */
+/* En-tête plein + filet de la 2e couleur */
+header nav[aria-label] { background:#0A3161 !important; border-bottom:5px solid #B31942 !important; backdrop-filter:none !important; }
+header nav[aria-label] > div > a, header nav[aria-label] > div > a span, header nav[aria-label] .nav-dropdown-trigger, #mobile-menu-toggle, header nav[aria-label] a:not(#mobile-menu a):not(.nav-dropdown-panel a), header nav[aria-label] button:not(#mobile-menu button) { color:#fff !important; }
+header nav[aria-label] a[class*="border"]:not(#mobile-menu a) { border-color:rgba(255,255,255,.75) !important; }
+header nav[aria-label] img { background:#fff; border-radius:8px; padding:2px; }
+header nav[aria-label] .nav-dropdown-panel, #mobile-menu { background:#fff !important; }
+header nav[aria-label] .nav-dropdown-panel a, #mobile-menu a, #mobile-menu button, #mobile-menu span { color:#0F172A !important; }
+/* Bandeau héros pleine largeur dans la couleur forte */
+main header:has(> h1) { background:#0A3161 !important; box-shadow:0 0 0 100vmax #0A3161; clip-path:inset(-3rem -100vmax 0 -100vmax); margin-bottom:0 !important; padding-top:.25rem !important; padding-bottom:1.5rem !important; border:0 !important; }
+main header:has(> h1) h1, main header:has(> h1) h1 *, main header:has(> h1) p, main header:has(> h1) li, main header:has(> h1) label, main header:has(> h1) small, main header:has(> h1) strong, main header:has(> h1) span:not([class*="bg-"]) { color:#fff !important; }
+main header:has(> h1) h1 { letter-spacing:-0.02em; }
+main header:has(> h1) a { color:#fff !important; text-decoration:underline; text-decoration-color:#FFFFFF; text-decoration-thickness:2px; }
+main header:has(> h1) [class*="bg-"] { color:#0F172A !important; }
+main header:has(> h1) ~ :not([data-outil]):has(~ [data-outil]) { background:#0A3161 !important; box-shadow:0 0 0 100vmax #0A3161; clip-path:inset(0 -100vmax); margin-top:0 !important; margin-bottom:0 !important; padding-top:.75rem; padding-bottom:.75rem; }
+main header:has(> h1) ~ :not([data-outil]):has(~ [data-outil]), main header:has(> h1) ~ :not([data-outil]):has(~ [data-outil]) *:not(main [class*="bg-"] *):not([class*="bg-"]):not(input):not(select):not(textarea):not(option) { color:#fff !important; }
+main header:has(> h1) ~ :not([data-outil]):has(~ [data-outil]) a { text-decoration:underline; text-decoration-color:#FFFFFF; }
+main [data-outil] { background:#0A3161 !important; box-shadow:0 0 0 100vmax #0A3161; clip-path:inset(0 -100vmax); padding-bottom:2.25rem !important; margin-bottom:2.25rem !important; border:0 !important; }
+main [data-outil] [data-chrome]:not([data-chrome] [data-chrome]), main [data-outil][data-chrome] > * { background:#fff !important; border:0 !important; border-top:6px solid #B31942 !important; border-radius:14px !important; }
+main [data-outil][data-chrome] { padding:0 !important; }
+main [data-outil][data-chrome] > * { padding:1rem; }
+main [data-outil] [data-chrome] :is(p,label,span,h2,h3,li,dt,dd,td,th,legend,small,strong):not([class*="bg-accent-5"]):not([class*="bg-accent-6"]):not([class*="bg-accent-7"]):not([class*="text-white"]) { color:#0F172A; }
+main [data-outil] :is(p,span,small,strong,a,label,li,dt,dd,h2,h3,summary):not([data-chrome] *):not([data-chrome]):not(main [class*="bg-"] *):not([class*="bg-"]) { color:#fff !important; }
+main [data-outil][data-chrome] :is(p,label,span,h2,h3,li,dt,dd,td,th,legend,small,strong):not([class*="bg-accent-5"]):not([class*="bg-accent-6"]):not([class*="bg-accent-7"]):not([class*="text-white"]) { color:#0F172A !important; }
+main [data-outil] :is([class*="text-navy-4"],[class*="text-navy-5"],[class*="text-gray-4"],[class*="text-gray-5"],[class*="text-slate-4"],[class*="text-slate-5"]) { color:#334155 !important; }
+/* Chiffres-résultats grands, dans l'accent, sur fond teinté */
+main [aria-live] :is([class*="text-2xl"],[class*="text-3xl"],[class*="text-4xl"]):not([class*="text-white"]), main [data-resultat] :is([class*="text-2xl"],[class*="text-3xl"]) { font-size:2.1rem !important; line-height:1.15 !important; color:#B31942 !important; background:#EEF1F4; border-radius:8px; padding:.05em .3em; }
+/* Sections alternées blanc / teinte */
+main [data-outil] ~ :is(div,section):nth-of-type(odd) { background:#DDE2E9; box-shadow:0 0 0 100vmax #DDE2E9; clip-path:inset(0 -100vmax); padding-top:1.5rem; padding-bottom:1.5rem; }
+main .prose h2, main section > h2, main h2.text-2xl { color:#0A3161 !important; border-left:8px solid #B31942; padding-left:.6rem; }
+main h3 { color:#0A3161; }
+main :is(div,section) :is([class*="text-navy-4"],[class*="text-navy-5"],[class*="text-gray-4"],[class*="text-gray-5"],[class*="text-slate-4"],[class*="text-slate-5"]):not([data-outil] *):not(header *):not(main header:has(> h1) *):not(main header:has(> h1)) { color:#334155 !important; }
+/* Boutons pleins 2e couleur, liens soulignés colorés */
+main button[type="submit"], main a[class~="bg-accent-500"], main a[class~="bg-accent-600"], main a[class~="bg-accent-700"], main button[class~="bg-accent-500"], main button[class~="bg-accent-600"], main button[class~="bg-accent-700"], main a[class*="bg-brand"], main button[class*="bg-brand"], main a[class*="bg-primary"], main button[class*="bg-primary"] { background:#B31942 !important; color:#FFFFFF !important; border-color:#B31942 !important; border-radius:10px; font-weight:700; }
+main :is(button,a):is([class~="bg-accent-500"],[class~="bg-accent-600"],[class~="bg-accent-700"]) * { color:#FFFFFF !important; }
+main button[type="submit"]:hover, main a[class~="bg-accent-600"]:hover, main a[class~="bg-accent-500"]:hover { background:#931436 !important; }
+main .prose a, main p > a, main li > a { color:#0A3161 !important; text-decoration:underline; text-decoration-color:#B31942; text-decoration-thickness:2px; text-underline-offset:3px; }
+/* Encadrés et tableaux */
+main .bg-accent-50 { background:#EEF1F4 !important; border-left:6px solid #B31942; }
+main [class*="bg-accent-50/"], main [class*="bg-accent-100/"] { background:#EEF1F4 !important; }
+main :is([class*="bg-[#0"],[class*="bg-[#1"],[class*="bg-navy-9"],[class*="bg-navy-8"],[class*="bg-slate-9"],[class*="bg-gray-9"]) a { color:#fff !important; text-decoration-color:currentColor; text-underline-offset:6px; }
+main table thead th { color:#0A3161 !important; border-bottom:0 !important; box-shadow:inset 0 -3px 0 #B31942; background:#EEF1F4; }
+main a[class*="border-accent-"]:not([class~="bg-accent-500"]):not([class~="bg-accent-600"]):not([class~="bg-accent-700"]) { border-color:transparent !important; outline:1px solid #8498B0; outline-offset:0; background:#EEF1F4 !important; color:#0A3161 !important; }
+@media (max-width: 640px) {
+ main [data-outil] { margin-left:-1rem !important; margin-right:-1rem !important; padding-left:0 !important; padding-right:0 !important; }
+ main [data-outil] > astro-island { display:block; }
+ main [data-outil] [data-chrome]:not([data-chrome] [data-chrome]), main [data-outil][data-chrome] > *, main [data-outil] > astro-island > div { border-radius:0 !important; margin-left:0 !important; margin-right:0 !important; }
+}
+/* Pied de page plein sombre */
+footer { background:#061A36 !important; border-top:6px solid #B31942 !important; }
+footer, footer *:not(svg):not(path) { color:#E5E7EB !important; border-color:rgba(255,255,255,.2) !important; }
+footer a { color:#fff !important; text-decoration:underline; text-decoration-color:#B31942; }
+footer [class*="bg-"]:not([aria-hidden]) { background:transparent !important; }
+main [data-outil] :is([data-chrome],[data-outil]) :is(p,span,div,strong,output,dd):is([class*="text-3xl"],[class*="text-4xl"],[class*="text-5xl"]):not([class*="text-white"]):not([class*="bg-accent-5"]):not([class*="bg-accent-6"]):not([class*="bg-accent-7"]):not(h1), main [data-outil][data-chrome] :is(p,span,div,strong,output,dd):is([class*="text-3xl"],[class*="text-4xl"],[class*="text-5xl"]):not([class*="text-white"]):not([class*="bg-accent-5"]):not([class*="bg-accent-6"]):not([class*="bg-accent-7"]):not(h1) { color:#B31942 !important; }
+/* Pages à fil d Ariane : le fil passe sur le bandeau (en blanc) au lieu d être recouvert par l ombre du héros */
+main:has(header > h1) > div:has(> nav[aria-label]):not(:has(h1)) { background:#0A3161; box-shadow:0 0 0 100vmax #0A3161; clip-path:inset(0 -100vmax); }
+main:has(header > h1) > div:has(> nav[aria-label]):not(:has(h1)) :is(a,span,li,p,time) { color:#fff !important; }
+main:has(> div > nav[aria-label]) header:has(> h1) { clip-path:inset(-.75rem -100vmax 0 -100vmax) !important; }
+/* premier champ dans le premier écran du bureau (limite 461 px) */
+main header:has(> h1) { padding-bottom:.5rem !important; }
+main header:has(> h1) ~ :not([data-outil]):has(~ [data-outil]) { padding-top:.25rem !important; padding-bottom:.5rem !important; }
+/* pages sans simulateur (à propos, légales) : un vrai blanc sous le bandeau */
+main:not(:has([data-outil])) header:has(> h1) { margin-bottom:1.5rem !important; }
+/* === fin de la charte du pays === */
